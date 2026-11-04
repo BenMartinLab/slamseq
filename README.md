@@ -36,6 +36,8 @@ You must create a samplesheet with at least the following columns in CSV format.
 
 ```text
 sample    Sample name
+fastq1    Path to FastQ file for reads 1
+fastq2    Path to FastQ file for reads 2 (leave empty if you have single-end reads)
 ```
 
 ## Transfer data to scratch
@@ -44,6 +46,7 @@ You will need to transfer the following files on the server in the `scratch` fol
 
 * Samplesheet file.
 * FASTQ files.
+* FASTA file containing the adapter sequences.
 * Genome files (FASTA and GTF). See [Genomes](https://github.com/BenMartinLab/genomes).
     * Copy `slamdunk` folder for your genome.
 * Any additional files that are needed for your analysis.
@@ -68,6 +71,13 @@ export PATH=/project/def-bmartin/scripts/slamseq:$PATH
 
 ```shell
 samplesheet=samplesheet.csv
+```
+
+> [!IMPORTANT]
+> Change `adapters.fa` by your actual adapters FASTA filename.
+
+```shell
+adapters=adapters.fa
 ```
 
 > [!WARNING]
@@ -110,7 +120,15 @@ convert-samplesheet.py $samplesheet
 ## Trimming reads
 
 ```shell
-sbatch --array=samples_array bbduk.sh
+sbatch bbduk.sh \
+    --samplesheet $samplesheet \
+    ref=$adapters \
+    k=13 \
+    ktrim=r \
+    mink=5 \
+    qtrim=r \
+    trimq=10 \
+    minlength=20
 ```
 
 ## Reverse complement (if needed)
