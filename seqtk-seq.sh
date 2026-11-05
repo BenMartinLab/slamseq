@@ -119,18 +119,8 @@ while [[ $# -gt 0 ]]; do
             extra_parameters+=("$@")
             break
             ;;
-        --*=*)
-            # Long option with equals: --option=value
-            extra_parameters+=("$1")
-            shift
-            ;;
-        -*)
-            # Unknown short option → passthrough to kallisto
-            extra_parameters+=("$1")
-            shift
-            ;;
         *)
-            # Positional argument → passthrough
+            # Unknown argument → passthrough
             extra_parameters+=("$1")
             shift
             ;;
@@ -185,6 +175,13 @@ echo "Environment dump:"
 env | sort
 echo "------------------------------------------------------------"
 echo
+echo "Samplesheet:  $samplesheet"
+echo "FASTQ dir:    $fastq_dir"
+echo "Output dir:   $output_dir"
+echo "Jobs:         $jobs"
+echo "Dry-run:      $dry_run"
+echo
+echo
 
 ###############################################################################
 # Build seqtk command
@@ -194,18 +191,6 @@ cmd=(
     seqtk seq
     "${extra_parameters[@]}"
 )
-
-###############################################################################
-# Dry-run mode
-###############################################################################
-
-echo "Samplesheet:  $samplesheet"
-echo "FASTQ dir:    $fastq_dir"
-echo "Output dir:   $output_dir"
-echo "Jobs:         $jobs"
-echo "Dry-run:      $dry_run"
-echo
-echo
 
 ###############################################################################
 # Seqtk execution block per FASTQ
@@ -223,10 +208,11 @@ run_seqtk() {
     gzip_cmd=(gzip -c "$seqtk_output")
     output="${output_dir}/${fastq_filename}"
     if [[ "$dry_run" == true ]]; then
-        echo "Commands:"
+        echo "Commands for fastq '$_fastq'"
         printf "  %q > %s" "${gunzip_cmd[@]}" "$gunzip_output"
         printf "  %q > %s" "${cmd[@]}" "$seqtk_output"
         printf "  %q > %s" "${gzip_cmd[@]}" "$output"
+        echo
         return
     fi
     rm -f "$gunzip_output"
@@ -249,9 +235,13 @@ export dry_run
 ###############################################################################
 
 mkdir -p "${output_dir}"
-if [[ "$dry_run" == true ]]; then
-    echo "Dry-run mode enabled — command not executed."
-fi
 parallel -j "$jobs" \
     --env run_seqtk,cmd_str,output_dir,tmp_dir,dry_run \
     run_seqtk ::: "${fastq[@]}"
+echo
+echo
+
+if [[ "$dry_run" == true ]]; then
+    echo "Dry-run mode enabled — command not executed."
+    exit 0
+fi

@@ -8,7 +8,7 @@
 set -euo pipefail
 
 ###############################################################################
-# 0. Load modules on Alliance clusters
+# Load modules on Alliance clusters
 ###############################################################################
 
 if [[ -n "${CC_CLUSTER:-}" ]]; then
@@ -19,7 +19,7 @@ if [[ -n "${CC_CLUSTER:-}" ]]; then
 fi
 
 ###############################################################################
-# 1. Script name detection (SLURM-friendly)
+# Script name detection (SLURM-friendly)
 ###############################################################################
 
 script_path="${BASH_SOURCE[0]}"
@@ -30,7 +30,7 @@ fi
 script_name="$(basename "$script_path")"
 
 ###############################################################################
-# 2. Help text
+# Help text
 ###############################################################################
 
 show_help() {
@@ -52,7 +52,7 @@ show_help() {
 }
 
 ###############################################################################
-# 3. Default values
+# Default values
 ###############################################################################
 
 output_dir=fastqc
@@ -60,7 +60,7 @@ threads="${SLURM_CPUS_PER_TASK:-1}"
 dry_run=false
 
 ###############################################################################
-# 4. Manual argument parsing (safe, collision-free)
+# Manual argument parsing (safe, collision-free)
 ###############################################################################
 
 extra_parameters=()
@@ -96,18 +96,8 @@ while [[ $# -gt 0 ]]; do
             extra_parameters+=("$@")
             break
             ;;
-        --*=*)
-            # Long option with equals: --option=value
-            extra_parameters+=("$1")
-            shift
-            ;;
-        -*)
-            # Unknown short option → passthrough to fastqc
-            extra_parameters+=("$1")
-            shift
-            ;;
         *)
-            # Positional argument → passthrough
+            # Unknown argument → passthrough
             extra_parameters+=("$1")
             shift
             ;;
@@ -115,7 +105,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 ###############################################################################
-# 5. Logging + SLURM metadata + environment dump
+# Logging + SLURM metadata + environment dump
 ###############################################################################
 
 echo "------------------------------------------------------------"
@@ -134,6 +124,11 @@ echo "Environment dump:"
 env | sort
 echo "------------------------------------------------------------"
 echo
+echo "Output dir:  $output_dir"
+echo "Threads:     $threads"
+echo "Dry-run:     $dry_run"
+echo
+
 
 ###############################################################################
 # 6. Build fastqc command
@@ -146,27 +141,19 @@ cmd=(
     "${extra_parameters[@]}"
 )
 
-###############################################################################
-# 7. Dry-run mode
-###############################################################################
-
-echo "Output dir:  $output_dir"
-echo "Threads:     $threads"
-echo "Dry-run:     $dry_run"
-echo
 echo "Command:"
 printf "  %q " "${cmd[@]}"
 echo
 echo
 
+###############################################################################
+# 11. Execute fastqc
+###############################################################################
+
 if [[ "$dry_run" == true ]]; then
     echo "Dry-run mode enabled — command not executed."
     exit 0
 fi
-
-###############################################################################
-# 11. Execute fastqc
-###############################################################################
 
 mkdir -p "$output_dir"
 "${cmd[@]}"

@@ -140,7 +140,7 @@ sbatch bbduk.sh \
 ## Reverse complement (if needed)
 
 ```shell
-sbatch seqtk-seq.sh \
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" seqtk-seq.sh \
     --samplesheet $samplesheet \
     --fastq-dir bbduk \
     -r

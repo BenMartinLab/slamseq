@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-bmartin
 #SBATCH --time=03:00:00
-#SBATCH --cpus-per-task=24
-#SBATCH --mem=48G
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=120G
 #SBATCH --output=bbduk-%A.out
 
 set -euo pipefail
@@ -42,7 +42,7 @@ show_help() {
     echo "  -S, --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)"
     echo "  -o, --output-dir DIR       Output directory (default: bbduk)"
     echo "  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)"
-    echo "  -j, --jobs       INT       Number of jobslots for parallel (default: 4)"
+    echo "  -j, --jobs       INT       Number of jobslots for parallel (default: 8)"
     echo "  -d, --dry-run              Print commands but do not execute"
     echo "  -h, --help                 Show this help"
     echo
@@ -63,7 +63,7 @@ show_help() {
 samplesheet="samplesheet.csv"
 output_dir="bbduk"
 threads="${SLURM_CPUS_PER_TASK:-1}"
-jobs=4
+jobs=8
 dry_run=false
 
 ###############################################################################
@@ -119,18 +119,8 @@ while [[ $# -gt 0 ]]; do
             extra_parameters+=("$@")
             break
             ;;
-        --*=*)
-            # Long option with equals: --option=value
-            extra_parameters+=("$1")
-            shift
-            ;;
-        -*)
-            # Unknown short option → passthrough to kallisto
-            extra_parameters+=("$1")
-            shift
-            ;;
         *)
-            # Positional argument → passthrough
+            # Unknown argument → passthrough
             extra_parameters+=("$1")
             shift
             ;;
@@ -155,12 +145,12 @@ fastq=()
 collect_fastq "$samplesheet" fastq
 
 ###############################################################################
-# Number of threads for bbduk
+# Number of threads per job
 ###############################################################################
 
-threads_bbduk=$(((threads + jobs - 1) / 2))
+threads_per_job=$(((threads + jobs - 1) / jobs))
 if [[ "${#fastq[@]}" < jobs ]]; then
-    threads_bbduk=$threads
+    threads_per_job=$threads
 fi
 
 ###############################################################################
@@ -183,21 +173,6 @@ echo "Environment dump:"
 env | sort
 echo "------------------------------------------------------------"
 echo
-
-###############################################################################
-# Build bbduk command
-###############################################################################
-
-cmd=(
-    bbduk.sh
-    usejni=t
-    "${extra_parameters[@]}"
-)
-
-###############################################################################
-# Dry-run mode
-###############################################################################
-
 echo "Samplesheet:  $samplesheet"
 echo "Output dir:   $output_dir"
 echo "Threads:      $threads"
@@ -207,15 +182,34 @@ echo
 echo
 
 ###############################################################################
+# Build bbduk command
+###############################################################################
+
+cmd=(
+    bbduk.sh
+    usejni=t
+    threads="$threads_per_job"
+    "${extra_parameters[@]}"
+)
+
+###############################################################################
 # Execute bbduk
 ###############################################################################
 
-mkdir -p "${output_dir}"
 if [[ "$dry_run" == true ]]; then
-    echo "Dry-run mode enabled — command not executed."
     dry_run_parameters=("--dry-run")
 fi
+mkdir -p "${output_dir}"
+echo "Commands:"
 parallel -j "$jobs" \
+    --verbose \
     "${dry_run_parameters[@]}" \
-    "${cmd[@]}" threads="$threads_bbduk" in="{}" out="${output_dir}/{/}" \
+    "${cmd[@]}" in="{}" out="${output_dir}/{/}" \
     ::: "${fastq[@]}"
+echo
+echo
+
+if [[ "$dry_run" == true ]]; then
+    echo "Dry-run mode enabled — commands not executed."
+    exit 0
+fi
