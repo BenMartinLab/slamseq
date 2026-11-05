@@ -15,6 +15,11 @@ collect_samples() {
     )
 }
 
+
+###############################################################################
+# Extract FASTQ files from samplesheet
+###############################################################################
+
 collect_fastq() {
     local samplesheet="$1"
     local -n out_fastq="$2"

@@ -38,7 +38,7 @@ show_help() {
     echo
     echo "Usage: $script_name MODE [options] -- [extra args passed to alleyoop]"
     echo
-    echo "Wrapper mode:"
+    echo "Alleyoop mode:"
     echo "  mode             MODE      Alleyoop mode (ex: rates, tccontext, utrrates) (required)"
     echo
     echo "Wrapper options:"
@@ -105,7 +105,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 ###############################################################################
-# Validate inputs
+# Validate arguments
 ###############################################################################
 
 if [[ -n "$mode" ]] || [[ "$mode" == -* ]]; then
