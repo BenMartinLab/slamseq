@@ -36,9 +36,11 @@ You must create a samplesheet with at least the following columns in CSV format.
 
 ```text
 sample    Sample name
-fastq1    Path to FastQ file for reads 1
+fastq1    Path to FastQ file for reads 1. 
 fastq2    Path to FastQ file for reads 2 (leave empty if you have single-end reads)
 ```
+
+FASTQ files have to be gzipped and have the extension “.fastq.gz” or “.fq.gz”.
 
 ## Transfer data to scratch
 
@@ -134,7 +136,10 @@ sbatch bbduk.sh \
 ## Reverse complement (if needed)
 
 ```shell
-sbatch --array=samples_array reverse-complement-bbduk.sh
+sbatch seqtk-seq.sh \
+    --samplesheet $samplesheet \
+    --fastq-dir bbduk \
+    -r
 ```
 
 ## Sequencing data quality check
