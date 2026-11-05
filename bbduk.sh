@@ -41,6 +41,7 @@ show_help() {
     echo "  -S, --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)"
     echo "  -o, --output-dir DIR       Output directory (default: bbduk)"
     echo "  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)"
+    echo "  -j, --jobs       INT       Number of jobslots for parallel (default: 4)"
     echo "  -d, --dry-run              Print commands but do not execute"
     echo "  -h, --help                 Show this help"
     echo
@@ -61,6 +62,7 @@ show_help() {
 samplesheet="samplesheet.csv"
 output_dir="bbduk"
 threads="${SLURM_CPUS_PER_TASK:-1}"
+jobs=4
 dry_run=false
 
 ###############################################################################
@@ -93,6 +95,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --threads=*)
             threads="${1#--threads=}"
+            shift
+            ;;
+        -j|--jobs)
+            jobs="$2"
+            shift 2
+            ;;
+        --jobs=*)
+            jobs="${1#--jobs=}"
             shift
             ;;
         -d|--dry-run)
@@ -147,9 +157,8 @@ collect_fastq "$samplesheet" fastq
 # Number of threads for bbduk
 ###############################################################################
 
-threads_bbduk=$((($threads + 1) / 2))
-if [[ "${#samples[@]}" == 1 ]]
-then
+threads_bbduk=$(((threads + jobs - 1) / 2))
+if [[ "${#fastq[@]}" < jobs ]]; then
     threads_bbduk=$threads
 fi
 
@@ -191,6 +200,7 @@ cmd=(
 echo "Samplesheet:  $samplesheet"
 echo "Output dir:   $output_dir"
 echo "Threads:      $threads"
+echo "Jobs:         $jobs"
 echo "Dry-run:      $dry_run"
 echo
 echo
@@ -204,7 +214,7 @@ if [[ "$dry_run" == true ]]; then
     echo "Dry-run mode enabled — command not executed."
     dry_run_parameters=("--dry-run")
 fi
-parallel -j 2 \
+parallel -j "$jobs" \
     "${dry_run_parameters[@]}" \
     "${cmd[@]}" threads="$threads_bbduk" in="{}" out="${output_dir}/{/}" \
     ::: "${fastq[@]}"
