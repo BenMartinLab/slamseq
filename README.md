@@ -166,8 +166,8 @@ python salmon-addgene.py --output salmon-quant/salmon-quantmerge-genes.txt --gtf
 ### SlamDunk
 
 ```shell
-sbatch slamdunk-all.sh \
-    --samplesheet "$(basename samplesheet .csv).slamdunk.csv" \
+sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk.sh all \
+    --outputDir slamdunk \
     --reference "$genome.fa" \
     --bed "$genome-transcripts.bed" \
     --trim-5p 5 \
@@ -177,7 +177,8 @@ sbatch slamdunk-all.sh \
     --var-fraction 0.8 \
     --max-read-length 151 \
     --min-base-qual 26 \
-    --skip-sam
+    --skip-sam \
+    "$(basename samplesheet .csv).slamdunk.csv"
 ```
 
 ### Count multiple TC mutations
@@ -187,13 +188,18 @@ sbatch slamdunk-all.sh \
 mutation.
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk-count.sh \
-    --samplesheet "$(basename samplesheet .csv).slamdunk.csv" \
+mv "${output_dir}/count" "${output_dir}/count_onetcreadcount"
+```
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk.sh count \
+    --outputDir slamdunk/count_twotcreadcount \
     --reference "$genome.fa" \
     --bed "$genome-transcripts.bed" \
     --max-read-length 151 \
     --min-base-qual 26 \
-    --conversion-threshold 2
+    --conversion-threshold 2 \
+    "${output_dir}"/filter/*.bam
 ```
 
 ### Alleyoop

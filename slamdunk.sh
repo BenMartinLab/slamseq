@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --account=def-bmartin
 #SBATCH --time=1-00:00:00
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=8G
-#SBATCH --output=slamdunk-count2-%A.out
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=120G
+#SBATCH --output=slamdunk-%A.out
 
 set -euo pipefail
 
@@ -36,21 +36,21 @@ script_dir="$(dirname "$script_path")"
 
 show_help() {
     echo
-    echo "Usage: $script_name [options] -- [extra args passed to slamdunk count]"
+    echo "Usage: $script_name [options] -- [extra args passed to slamdunk]"
+    echo
+    echo "SlamDunk mode:"
+    echo "  mode             MODE      SlamDunk mode (ex: all, count) (required)"
     echo
     echo "Wrapper options:"
-    echo "  -o, --outputDir  DIR       Output directory (default: slamdunk/count_twotcreadcount)"
     echo "  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)"
     echo "  -d, --dry-run              Print commands but do not execute"
     echo "  -h, --help                 Show this help"
     echo
-    echo "Everything after '--' or any unknown option is passed directly to slamdunk count."
-    echo
-    echo "Do not specify FASTQ files; they are inferred from the samplesheet."
+    echo "Everything after '--' or any unknown option is passed directly to slamdunk."
     echo
     echo "Example:"
-    echo "  sbatch --cpus-per-task=8 $script_name --samplesheet samples.csv --reference hg38.fa --bed hg38-transcripts.bed"
-    echo "  $script_name --samplesheet samples.csv --reference hg38.fa --bed hg38-transcripts.bed"
+    echo "  sbatch --cpus-per-task=8 $script_name all --reference hg38.fa --bed hg38-transcripts.bed samplesheet.slamdunk.csv"
+    echo "  $script_name all --threads 8 --reference hg38.fa --bed hg38-transcripts.bed samplesheet.slamdunk.csv"
     echo
 }
 
@@ -58,8 +58,6 @@ show_help() {
 # Default values
 ###############################################################################
 
-samplesheet="samplesheet.slamdunk.csv"
-output_dir="slamdunk/count_twotcreadcount"
 threads="${SLURM_CPUS_PER_TASK:-1}"
 dry_run=false
 
@@ -69,6 +67,9 @@ workdir=${SLURM_TMPDIR:-${PWD}}
 ###############################################################################
 # Manual argument parsing (safe, collision-free)
 ###############################################################################
+
+mode="${1:-}"
+shift
 
 extra_parameters=()
 
@@ -120,11 +121,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 ###############################################################################
-# Validate inputs
+# Validate arguments
 ###############################################################################
 
-if [[ ! -f "$samplesheet" ]]; then
-    echo "Error: Samplesheet '$samplesheet' does not exist." >&2
+if [[ -n "$mode" ]] || [[ "$mode" == -* ]]; then
+    echo "Error: Mode '$mode' is invalid." >&2
     exit 1
 fi
 
@@ -157,15 +158,13 @@ echo "Environment dump:"
 env | sort
 echo "------------------------------------------------------------"
 echo
-echo "Samplesheet:  $samplesheet"
-echo "Output dir:   $output_dir"
 echo "Threads:      $threads"
 echo "Dry-run:      $dry_run"
 echo
 echo
 
 ###############################################################################
-# Build slamdunk count command
+# Build slamdunk all command
 ###############################################################################
 
 cmd=(
@@ -175,12 +174,9 @@ cmd=(
     --pwd /data
     --bind "$PWD:/data" \
     "$slamdunk_container"
-    slamdunk count
-    "${extra_parameters[@]}"
-    --snp-directory "$(dirname "$output_dir")/snp"
-    --outputDir "$output_dir"
+    slamdunk "$mode"
     --threads "$threads"
-    "$(dirname "$output_dir")"/filter/*.bam
+    "${extra_parameters[@]}"
 )
 
 echo "Command:"
@@ -189,7 +185,7 @@ echo
 echo
 
 ###############################################################################
-# Execute slamdunk count
+# Execute slamdunk all
 ###############################################################################
 
 if [[ "$dry_run" == true ]]; then
