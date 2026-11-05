@@ -337,7 +337,9 @@ Run MultiQC to get an HTML output from Alleyoop. This will make it easier to see
 succeeded.
 
 ```shell
-sbatch multiqc.sh
+sbatch multiqc.sh \
+  --outdir multiqc \
+  fastqc ${slamdunk_dir}/alleyoop
 ```
 
 ### Count no TC mutations
