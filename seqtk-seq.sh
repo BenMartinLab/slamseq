@@ -41,7 +41,7 @@ show_help() {
     echo "  --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)"
     echo "  --output-dir DIR       Output directory (default: bbduk-rv)"
     echo "  --fastq-dir  DIR       FASTQ directory (default: use paths in samplesheet)"
-    echo "  --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)"
+    echo "  --jobs       INT       Number of jobslots for parallel (default: SLURM_CPUS_PER_TASK)"
     echo "  --dry-run              Print commands but do not execute"
     echo "  -h, --help             Show this help"
     echo
@@ -62,7 +62,7 @@ show_help() {
 samplesheet="samplesheet.csv"
 output_dir="bbduk-rv"
 fastq_dir=""
-threads="${SLURM_CPUS_PER_TASK:-1}"
+jobs="${SLURM_CPUS_PER_TASK:-1}"
 dry_run=false
 
 ###############################################################################
@@ -97,12 +97,12 @@ while [[ $# -gt 0 ]]; do
             fastq_dir="${1#--fastq-dir=}"
             shift
             ;;
-        --threads)
-            threads="$2"
+        --jobs)
+            jobs="$2"
             shift 2
             ;;
-        --threads=*)
-            threads="${1#--threads=}"
+        --jobs=*)
+            jobs="${1#--jobs=}"
             shift
             ;;
         --dry-run)
@@ -201,7 +201,7 @@ cmd=(
 echo "Samplesheet:  $samplesheet"
 echo "FASTQ dir:    $fastq_dir"
 echo "Output dir:   $output_dir"
-echo "Threads:      $threads"
+echo "Jobs:         $jobs"
 echo "Dry-run:      $dry_run"
 echo
 echo
@@ -251,6 +251,6 @@ mkdir -p "${output_dir}"
 if [[ "$dry_run" == true ]]; then
     echo "Dry-run mode enabled — command not executed."
 fi
-parallel -j "$threads" \
+parallel -j "$jobs" \
     --env run_seqtk,cmd_str,output_dir,tmp_dir,dry_run \
     run_seqtk ::: "${fastq[@]}"
