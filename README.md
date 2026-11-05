@@ -198,8 +198,137 @@ sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk-count.sh \
 
 ### Alleyoop
 
+> [!TIP]
+> All methods for Alleyoop can be launched in parallel.
+
+#### rates
+
 ```shell
-sbatch alleyoop.sh
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh rates \
+    --outputDir slamdunk/alleyoop/rates \
+    --reference "$genome.fa" \
+    --min-basequality 26 \
+    slamdunk/filter/*.bam
+```
+
+#### tccontext
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tccontext \
+    --outputDir slamdunk/alleyoop/tccontext \
+    --reference "$genome.fa" \
+    --min-basequality 26 \
+    slamdunk/filter/*.bam
+```
+
+#### utrrates
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh utrrates \
+    --outputDir slamdunk/alleyoop/utrrates \
+    --reference "$genome.fa" \
+    --bed "$genome-transcripts.bed" \
+    --multiTCStringency \
+    --max-read-length 151 \
+    --min-basequality 26 \
+    slamdunk/filter/*.bam
+```
+
+#### snpeval
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh snpeval \
+    --outputDir slamdunk/alleyoop/snpeval \
+    --snp-directory slamdunk/snp \
+    --reference "$genome.fa" \
+    --bed "$genome-transcripts.bed" \
+    --min-coverage 10 \
+    --var-fraction 0.8 \
+    --multiTCStringency \
+    --max-read-length 151 \
+    --min-base-qual 26 \
+    slamdunk/filter/*.bam
+```
+
+#### summary
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh summary \
+    --output slamdunk/alleyoop/summary_onetcreadcount.tsv \
+    --tcountDir slamdunk/count_onetcreadcount \
+    slamdunk/filter/*.bam
+```
+
+#### summary for >2 T>C conversions
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh summary \
+    --output slamdunk/alleyoop/summary_twotcreadcount.tsv \
+    --tcountDir slamdunk/count_twotcreadcount \
+    slamdunk/filter/*.bam
+```
+
+#### merge total read count
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_totalreadcount.tsv \
+    --column ReadCount \
+    slamdunk/count_onetcreadcount/*.tsv
+```
+
+#### merge TC read count
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_onetcreadcount.tsv \
+    --column TcReadCount \
+    slamdunk/count_onetcreadcount/*.tsv
+```
+
+#### merge >2 TC read count
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_twotcreadcount.tsv \
+    --column TcReadCount \
+    slamdunk/count_twotcreadcount/*.tsv
+```
+
+#### tcperreadpos
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tcperreadpos \
+    --outputDir slamdunk/alleyoop/tcperreadpos \
+    --reference "$genome.fa" \
+    --snp-directory slamdunk/snp \
+    --max-read-length 151 \
+    --min-basequality 26 \
+    slamdunk/filter/*.bam
+```
+
+#### tcperutrpos
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tcperutrpos \
+    --outputDir slamdunk/alleyoop/tcperutrpos \
+    --reference "$genome.fa" \
+    --bed "$genome-transcripts.bed" \
+    --snp-directory slamdunk/snp \
+    --max-read-length 151 \
+    --min-basequality 26 \
+    slamdunk/filter/*.bam
+```
+
+#### dump
+
+```shell
+sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh dump \
+    --outputDir slamdunk/alleyoop/dump \
+    --reference "$genome.fa" \
+    --snp-directory slamdunk/snp \
+    --min-basequality 26 \
+    slamdunk/filter/*.bam
 ```
 
 ### MultiQC (check Alleyoop output)
