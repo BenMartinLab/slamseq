@@ -83,6 +83,10 @@ samplesheet=samplesheet.csv
 adapters=adapters.fa
 ```
 
+```shell
+cpus=$(cpus-slamseq.sh -s "$samplesheet" -m 64)
+```
+
 > [!WARNING]
 > `samples_array` does not contain the right values - Elie used array=0-20 and array=0-41 depending
 on the scripts.
