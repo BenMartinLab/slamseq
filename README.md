@@ -162,7 +162,18 @@ python salmon-addgene.py --output salmon-quant/salmon-quantmerge-genes.txt --gtf
 ### SlamDunk
 
 ```shell
-sbatch --array=samples_array slamdunk.sh
+sbatch slamdunk-all.sh \
+    --samplesheet "$(basename samplesheet .csv).slamdunk.csv" \
+    --reference "$genome.fa" \
+    --bed "$genome-transcripts.bed" \
+    --trim-5p 5 \
+    --topn 100 \
+    --multimap \
+    --min-coverage 10 \
+    --var-fraction 0.8 \
+    --max-read-length 151 \
+    --min-base-qual 26 \
+    --skip-sam
 ```
 
 ### Count multiple TC mutations
