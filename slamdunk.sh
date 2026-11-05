@@ -75,22 +75,6 @@ extra_parameters=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -S|--samplesheet)
-            samplesheet="$2"
-            shift 2
-            ;;
-        --samplesheet=*)
-            samplesheet="${1#--samplesheet=}"
-            shift 2
-            ;;
-        -o|--outputDir)
-            output_dir="$2"
-            shift 2
-            ;;
-        --outputDir=*)
-            output_dir="${1#--outputDir=}"
-            shift
-            ;;
         -t|--threads)
             threads="$2"
             shift 2
