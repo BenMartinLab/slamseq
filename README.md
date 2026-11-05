@@ -145,7 +145,7 @@ sbatch seqtk-seq.sh \
 ## Sequencing data quality check
 
 ```shell
-sbatch fastqc.sh
+sbatch fastqc.sh ./*.fastq.gz bbduk*/*.fastq.gz
 ```
 
 ## Finding major isoform (Optional)
