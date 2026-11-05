@@ -12,18 +12,18 @@ To install the scripts on Alliance Canada servers and download genomes, see [INS
 1. [Samplesheet](#samplesheet)
 2. [Transfer data to scratch](#transfer-data-to-scratch)
 3. [Prepare working environment](#prepare-working-environment)
-   1. [Set additional variables](#set-additional-variables)
+    1. [Set additional variables](#set-additional-variables)
 4. [Convert samplesheet to other formats](#convert-samplesheet-to-other-formats)
 5. [Trimming reads](#trimming-reads)
 6. [Reverse complement (if needed)](#reverse-complement-if-needed)
 7. [Sequencing data quality check](#sequencing-data-quality-check)
 8. [Finding major isoform (Optional)](#finding-major-isoform-optional)
 9. [Align reads and process TC mutations](#align-reads-and-process-tc-mutations)
-   1. [SlamDunk](#slamdunk)
-   2. [Count multiple TC mutations](#count-multiple-tc-mutations)
-   3. [Alleyoop](#alleyoop)
-   4. [MultiQC (check Alleyoop output)](#multiqc-check-alleyoop-output)
-   5. [Count no TC mutations](#count-no-tc-mutations)
+    1. [SlamDunk](#slamdunk)
+    2. [Count multiple TC mutations](#count-multiple-tc-mutations)
+    3. [Alleyoop](#alleyoop)
+    4. [MultiQC (check Alleyoop output)](#multiqc-check-alleyoop-output)
+    5. [Count no TC mutations](#count-no-tc-mutations)
 10. [Create BigWig for use on Genome Browser](#create-bigwig-for-use-on-genome-browser)
 11. [Correlation for samples and dataset](#correlation-for-samples-and-dataset)
 12. [MultiQC](#multiqc)
@@ -55,7 +55,8 @@ You will need to transfer the following files on the server in the `scratch` fol
 
 There are many ways to transfer data to the server. Here are some suggestions.
 
-* Use an FTP software like [WinSCP](https://winscp.net) (Windows), [Cyberduck](https://cyberduck.io) (Mac), [FileZilla](https://filezilla-project.org).
+* Use an FTP software like [WinSCP](https://winscp.net) (Windows), [Cyberduck](https://cyberduck.io)
+  (Mac), [FileZilla](https://filezilla-project.org).
 * Use command line tools like `rsync` or `scp`.
 
 ## Prepare working environment
@@ -83,7 +84,8 @@ adapters=adapters.fa
 ```
 
 > [!WARNING]
-> `samples_array` does not contain the right values - Elie used array=0-20 and array=0-41 depending on the scripts.
+> `samples_array` does not contain the right values - Elie used array=0-20 and array=0-41 depending
+on the scripts.
 
 > [!WARNING]
 > A `dataset_array` should also be created - Elie used array=0-11
@@ -110,10 +112,8 @@ spike=dm6
 
 ## Convert samplesheet to other formats
 
-The samplesheet file must be converted to other formats to run the pipeline. Simply run the following command.
-
-> [!WARNING]
-> `convert-samplesheet.py` does not exists yet.
+The samplesheet file must be converted to other formats to run the pipeline. Simply run the
+following command.
 
 ```shell
 convert-samplesheet.py $samplesheet
@@ -168,7 +168,8 @@ sbatch --array=samples_array slamdunk.sh
 ### Count multiple TC mutations
 
 > [!TIP]
-> Reads with multiple TC mutations are more likely to be nascent RNAs than those with a single mutation.
+> Reads with multiple TC mutations are more likely to be nascent RNAs than those with a single
+mutation.
 
 ```shell
 sbatch slamdunk-count2.sh
@@ -182,7 +183,8 @@ sbatch alleyoop.sh
 
 ### MultiQC (check Alleyoop output)
 
-Run MultiQC to get an HTML output from Alleyoop. This will make it easier to see if SlamDunk succeeded.
+Run MultiQC to get an HTML output from Alleyoop. This will make it easier to see if SlamDunk
+succeeded.
 
 ```shell
 sbatch multiqc.sh
