@@ -1,3 +1,4 @@
+#!/bin/bash
 #SBATCH --account=def-bmartin
 #SBATCH --time=03:00:00
 #SBATCH --cpus-per-task=24
