@@ -187,7 +187,13 @@ sbatch slamdunk-all.sh \
 mutation.
 
 ```shell
-sbatch slamdunk-count2.sh
+sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk-count.sh \
+    --samplesheet "$(basename samplesheet .csv).slamdunk.csv" \
+    --reference "$genome.fa" \
+    --bed "$genome-transcripts.bed" \
+    --max-read-length 151 \
+    --min-base-qual 26 \
+    --conversion-threshold 2
 ```
 
 ### Alleyoop
