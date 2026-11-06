@@ -87,19 +87,6 @@ adapters=adapters.fa
 cpus=$(cpus-slamseq.sh -s "$samplesheet" -m 64)
 ```
 
-> [!WARNING]
-> `samples_array` does not contain the right values - Elie used array=0-20 and array=0-41 depending
-on the scripts.
-
-> [!WARNING]
-> A `dataset_array` should also be created - Elie used array=0-11
-
-```shell
-samples_array=$(awk -F ',' \
-    'NR > 1 && !seen[$1] {ln++; seen[$1]++} END {print "0-"ln-1}' \
-    "$samplesheet")
-```
-
 > [!IMPORTANT]
 > Change `hg38-spike-dm6` by your actual genome name.
 
