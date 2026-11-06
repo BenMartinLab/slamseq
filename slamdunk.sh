@@ -138,8 +138,10 @@ echo "  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}"
 echo "  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}"
 echo "  Node:          ${SLURM_NODELIST:-N/A}"
 echo
-echo "Environment dump:"
-env | sort
+if [[ "${debug:-}" == true ]]; then
+    echo "Environment dump:"
+    env | sort
+fi
 echo "------------------------------------------------------------"
 echo
 echo "Threads:      $threads"
