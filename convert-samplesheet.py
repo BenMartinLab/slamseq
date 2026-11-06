@@ -72,10 +72,12 @@ def write_slamdunk(samplesheet_rows: list[dict[str, str]],
     for row in samplesheet_rows:
       index += 1
       writer.writerow(
-        [row.get("fastq_1", ""), row.get("sample", "") + "_R1", str(index)])
+        [row.get("fastq_1", ""), row.get("sample", "") + "_R1",
+         str(index), str(index)])
       if "fastq_2" in row:
         writer.writerow(
-          [row.get("fastq_2", ""), row.get("sample", "") + "_R2", str(index)])
+          [row.get("fastq_2", ""), row.get("sample", "") + "_R2",
+           str(index), str(index)])
 
 
 def main(argv: list[str] | None = None):
