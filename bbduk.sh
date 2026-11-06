@@ -149,7 +149,7 @@ collect_fastq "$samplesheet" fastq
 ###############################################################################
 
 threads_per_job=$(((threads + jobs - 1) / jobs))
-if [[ "${#fastq[@]}" < jobs ]]; then
+if [[ "${#fastq[@]}" -lt "$jobs" ]]; then
     threads_per_job=$threads
 fi
 
@@ -176,6 +176,7 @@ echo
 echo "Samplesheet:  $samplesheet"
 echo "Output dir:   $output_dir"
 echo "Threads:      $threads"
+echo "Threads per job: $threads_per_job"
 echo "Jobs:         $jobs"
 echo "Dry-run:      $dry_run"
 echo
