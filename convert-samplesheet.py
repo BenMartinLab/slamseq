@@ -50,9 +50,9 @@ def read_samplesheet(samplesheet_path: Path) -> tuple[
     for row in reader:
       row_dict = dict(zip(header, row))
       row_dict = {k: v.strip() for k, v in row_dict.items()}
-      validate_fastq(row_dict["fastq_1"])
+      validate_fastq(Path(row_dict["fastq_1"]))
       if "fastq_2" in header:
-        validate_fastq(row_dict["fastq_2"])
+        validate_fastq(Path(row_dict["fastq_2"]))
       rows.append(row_dict)
 
   return header, rows
