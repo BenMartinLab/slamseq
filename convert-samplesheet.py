@@ -59,24 +59,28 @@ def read_samplesheet(samplesheet_path: Path) -> tuple[
 
 
 def write_slamdunk(samplesheet_rows: list[dict[str, str]],
-    slamdunk_path: Path):
+    slamdunk_path: Path,
+    fastq_path: Path):
   """
   Writes samplesheet file for use with SlamDunk.
 
   :param samplesheet_rows: Rows from samplesheet CSV file.
   :param slamdunk_path: Where to write barcode whitelist file.
+  :param fastq_path: Change parent directory of FASTQ files to this path.
   """
   with open(slamdunk_path, "w") as f:
     writer = csv.writer(f)
     index = 0
     for row in samplesheet_rows:
       index += 1
+      fastq1 = fastq_path.joinpath(Path(row.get("fastq_1", "")).name)
       writer.writerow(
-        [row.get("fastq_1", ""), row.get("sample", "") + "_R1",
+        [fastq1, row.get("sample", "") + "_R1",
          str(index), str(index)])
       if "fastq_2" in row:
+        fastq2 = fastq_path.joinpath(Path(row.get("fastq_2", "")).name)
         writer.writerow(
-          [row.get("fastq_2", ""), row.get("sample", "") + "_R2",
+          [fastq2, row.get("sample", "") + "_R2",
            str(index), str(index)])
 
 
@@ -101,7 +105,12 @@ def main(argv: list[str] | None = None):
   )
   parser.add_argument(
     "-s", "--slamdunk",
-    help="Output SlamDunk samplesheet file."
+    help="Output SlamDunk samplesheet file.  (default: basename of samplesheet + '.slamdunk.csv')"
+  )
+  parser.add_argument(
+    "-f", "--fastq",
+    help="Directory containing FASTQ files to be processed by SlamDunk.  (default: %(default)s)",
+    default="bbduk"
   )
 
   args = parser.parse_args(argv)
@@ -116,9 +125,10 @@ def main(argv: list[str] | None = None):
 
   # Default output paths
   slamdunk = args.slamdunk or samplesheet_path.with_suffix(".slamdunk.csv")
+  fastq_path = Path(args.fastq)
 
   samplesheet_headers, samplesheet_rows = read_samplesheet(samplesheet_path)
-  write_slamdunk(samplesheet_rows, slamdunk)
+  write_slamdunk(samplesheet_rows, slamdunk, fastq_path)
 
   print("Conversion complete.")
   print(f"SlamDunk samplesheet:  {slamdunk}")

@@ -40,7 +40,7 @@ show_help() {
     echo
     echo "Wrapper options:"
     echo "  --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)"
-    echo "  --output-dir DIR       Output directory (default: bbduk-rv)"
+    echo "  --output-dir DIR       Output directory (default: bbduk-rc)"
     echo "  --fastq-dir  DIR       FASTQ directory (default: use paths in samplesheet)"
     echo "  --jobs       INT       Number of jobslots for parallel (default: SLURM_CPUS_PER_TASK)"
     echo "  --dry-run              Print commands but do not execute"
@@ -61,7 +61,7 @@ show_help() {
 ###############################################################################
 
 samplesheet="samplesheet.csv"
-output_dir="bbduk-rv"
+output_dir="bbduk-rc"
 fastq_dir=""
 jobs="${SLURM_CPUS_PER_TASK:-1}"
 dry_run=false

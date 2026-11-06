@@ -110,6 +110,13 @@ following command.
 convert-samplesheet.py $samplesheet
 ```
 
+> [!IMPORTANT]
+> If your sequences need to be reversed complement, use this command instead.
+
+```shell
+convert-samplesheet.py $samplesheet --fastq bbduk-rc
+```
+
 ## Trimming reads
 
 ```shell
