@@ -7,7 +7,8 @@
     2. [Clone repository](#Clone-repository)
 2. [Updating scripts](#Updating-scripts)
 3. [Install dependencies](#Install-dependencies)
-   1. [Install SlamDunk and UCSC utilities](#Install SlamDunk and UCSC utilities)
+    1. [UCSC utilities](#ucsc-utilities)
+    2. [SlamDunk](#slamdunk)
 
 ## Installing of the scripts
 
@@ -51,7 +52,7 @@ wget -O bigWigToBedGraph https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.
 chmod 755 bigWigToBedGraph
 ```
 
-### Install SlamDunk
+### SlamDunk
 
 ```shell
 wget -O slamdunk.sif https://g-88ccb6.6d81c.5898.data.globus.org/slamdunk/slamdunk-0.4.3-14270e5.sif
