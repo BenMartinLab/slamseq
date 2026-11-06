@@ -43,7 +43,7 @@ max_cpus=48
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -S|--samplesheet)
+        -s|--samplesheet)
             samplesheet="$2"
             shift 2
             ;;
