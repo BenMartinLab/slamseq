@@ -141,6 +141,9 @@ sbatch fastqc.sh ./*.fastq.gz bbduk*/*.fastq.gz
 
 ## Finding major isoform (Optional)
 
+> [!WARNING]
+> Salmon scripts do not work right now.
+
 ```shell
 sbatch salmon-index.sh
 sbatch --array=samples_array salmon-quant.sh
