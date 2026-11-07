@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=def-bmartin
 #SBATCH --time=03:00:00
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=8G
 #SBATCH --output=seqtk-seq-%A.out
 
@@ -151,8 +151,7 @@ if [[ -n "$fastq_dir" ]]; then
   for fq in "${fastq[@]}"; do
     fastq_tmp+=("${fastq_dir}/$(basename "$fq")")
   done
-  # shellcheck disable=SC2178
-  fastq=fastq_tmp
+  fastq=("${fastq_tmp[@]}")
 fi
 
 ###############################################################################
@@ -209,20 +208,30 @@ run_seqtk() {
     seqtk_output="${tmp_dir}/${fastq_filename}_seqtk.fastq"
     gzip_cmd=(gzip -c "$seqtk_output")
     output="${output_dir}/${fastq_filename}"
+    echo "Commands for fastq '$_fastq'"
+    printf " %q " "${gunzip_cmd[@]}"
+    printf " > "
+    printf " %q " "$gunzip_output"
+    echo
+    printf " %q " "${cmd[@]}"
+    printf " > "
+    printf " %q " "$seqtk_output"
+    echo
+    printf " %q " "${gzip_cmd[@]}"
+    printf " > "
+    printf " %q " "$output"
+    echo
+    echo
     if [[ "$dry_run" == true ]]; then
-        echo "Commands for fastq '$_fastq'"
-        printf "  %q > %s" "${gunzip_cmd[@]}" "$gunzip_output"
-        printf "  %q > %s" "${cmd[@]}" "$seqtk_output"
-        printf "  %q > %s" "${gzip_cmd[@]}" "$output"
-        echo
         return
     fi
     rm -f "$gunzip_output"
     "${gunzip_cmd[@]}" > "$gunzip_output"
     rm -f "$seqtk_output"
     "${cmd[@]}" > "$seqtk_output"
-    rm -f "$output"
+    rm -f "$gunzip_output" "$output"
     "${gzip_cmd[@]}" > "$output"
+    rm -f "$seqtk_output"
 }
 # Export for use with parallel.
 export -f run_seqtk
