@@ -199,14 +199,14 @@ cmd=(
 # Execute bbduk
 ###############################################################################
 
+parallel_parameters=("--verbose")
 if [[ "$dry_run" == true ]]; then
-    dry_run_parameters=("--dry-run")
+    parallel_parameters=("--dry-run")
 fi
 mkdir -p "${output_dir}"
 echo "Commands:"
-parallel -j "$jobs" \
-    --verbose \
-    "${dry_run_parameters[@]}" \
+parallel --jobs "$jobs" \
+    "${parallel_parameters[@]}" \
     "${cmd[@]}" in="{}" out="${output_dir}/{/}" \
     ::: "${fastq[@]}"
 echo
