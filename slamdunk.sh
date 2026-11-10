@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-bmartin
 #SBATCH --time=1-00:00:00
-#SBATCH --cpus-per-task=64
-#SBATCH --mem=120G
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=80G
 #SBATCH --output=slamdunk-%A.out
 
 set -euo pipefail
@@ -108,7 +108,7 @@ done
 # Validate arguments
 ###############################################################################
 
-if [[ -n "$mode" ]] || [[ "$mode" == -* ]]; then
+if [[ -z "$mode" ]] || [[ "$mode" == -* ]]; then
     echo "Error: Mode '$mode' is invalid." >&2
     exit 1
 fi
@@ -118,8 +118,25 @@ fi
 ###############################################################################
 
 if [[ -n "${SLURM_TMPDIR:-}" ]]; then
-  cp "$slamdunk_container" "$SLURM_TMPDIR"
-  slamdunk_container="${SLURM_TMPDIR}/$(basename "$slamdunk_container")"
+    cp "$slamdunk_container" "$SLURM_TMPDIR"
+    slamdunk_container="${SLURM_TMPDIR}/$(basename "$slamdunk_container")"
+fi
+
+###############################################################################
+# Number of jobs for 'all' and 'map' modes
+###############################################################################
+
+jobs=1
+threads_per_job=$threads
+if [[ "$mode" == all ]] || [[ "$mode" == map ]]; then
+    threads_per_job=2
+    jobs=$(((threads + threads_per_job - 1) / threads_per_job))
+    samplesheet="${extra_parameters[-1]}"
+    if ! [[ -f "$samplesheet" ]] || [[ "$samplesheet" == *.gz ]]; then
+        echo "Error: Samplesheet '$samplesheet' does not exist or is not a samplesheet." >&2
+        exit 1
+    fi
+    n_samples=$(grep -c '[^[:space:]]' "$samplesheet")
 fi
 
 ###############################################################################
@@ -144,13 +161,15 @@ if [[ "${debug:-}" == true ]]; then
 fi
 echo "------------------------------------------------------------"
 echo
-echo "Threads:      $threads"
-echo "Dry-run:      $dry_run"
+echo "Threads:          $threads"
+echo "Jobs:             $jobs"
+echo "Threads per job:  $threads_per_job"
+echo "Dry-run:          $dry_run"
 echo
 echo
 
 ###############################################################################
-# Build slamdunk all command
+# Build command
 ###############################################################################
 
 cmd=(
@@ -161,21 +180,38 @@ cmd=(
     --bind "$PWD:/data" \
     "$slamdunk_container"
     slamdunk "$mode"
-    --threads "$threads"
-    "${extra_parameters[@]}"
+    --threads "$threads_per_job"
 )
 
-echo "Command:"
-printf "  %q " "${cmd[@]}"
-echo
-echo
-
 ###############################################################################
-# Execute slamdunk all
+# Execute command
 ###############################################################################
 
-if [[ "$dry_run" == true ]]; then
-    echo "Dry-run mode enabled — command not executed."
-    exit 0
+if [[ "$mode" == "all" ]] || [[ "$mode" == "map" ]]; then
+    parallel_parameters=("--verbose")
+    if [[ "$dry_run" == true ]]; then
+        parallel_parameters=("--dry-run")
+    fi
+    echo "Commands:"
+    parallel --jobs "$jobs" \
+        "${parallel_parameters[@]}" \
+        "${cmd[@]}" --sample-index {} "${extra_parameters[@]}" \
+        ::: $(seq 1 "$n_samples")
+    echo
+    echo
+    if [[ "$dry_run" == true ]]; then
+        echo "Dry-run mode enabled — commands not executed."
+        exit 0
+    fi
+else
+    cmd+=("${extra_parameters[@]}")
+    echo "Command:"
+    printf "  %q " "${cmd[@]}"
+    echo
+    echo
+    if [[ "$dry_run" == true ]]; then
+        echo "Dry-run mode enabled — command not executed."
+        exit 0
+    fi
+    "${cmd[@]}"
 fi
-"${cmd[@]}"
