@@ -185,7 +185,7 @@ sbatch slamdunk.sh all \
 mutation.
 
 ```shell
-mv "${output_dir}/count" "${output_dir}/count_onetcreadcount"
+mv slamdunk/count slamdunk/count_onetcreadcount
 ```
 
 ```shell
@@ -196,7 +196,7 @@ sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk.sh count \
     --max-read-length 151 \
     --min-base-qual 26 \
     --conversion-threshold 2 \
-    "${output_dir}"/filter/*.bam
+    slamdunk/filter/*.bam
 ```
 
 ### Alleyoop
