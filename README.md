@@ -163,7 +163,7 @@ python salmon-addgene.py --output salmon-quant/salmon-quantmerge-genes.txt --gtf
 ### SlamDunk
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk.sh all \
+sbatch slamdunk.sh all \
     --outputDir slamdunk \
     --reference "$genome.fa" \
     --bed "$genome-transcripts.bed" \
