@@ -50,7 +50,7 @@ You will need to transfer the following files on the server in the `scratch` fol
 * FASTQ files.
 * FASTA file containing the adapter sequences.
 * Genome files (FASTA and GTF). See [Genomes](https://github.com/BenMartinLab/genomes).
-    * Copy `slamdunk` folder for your genome.
+    * Copy `slamseq` folder for your genome.
 * Any additional files that are needed for your analysis.
 
 There are many ways to transfer data to the server. Here are some suggestions.
@@ -162,7 +162,7 @@ python salmon-addgene.py --output salmon-quant/salmon-quantmerge-genes.txt --gtf
 sbatch --cpus-per-task=16 --mem=80G --time=1-0 slamdunk.sh all \
     --outputDir slamdunk \
     --reference "$genome.fa" \
-    --bed "$genome-transcripts.bed" \
+    --bed "slamseq/$genome-slamdunk.bed" \
     --trim-5p 5 \
     --topn 100 \
     --multimap \
@@ -188,7 +188,7 @@ mv slamdunk/count slamdunk/count_onetcreadcount
 sbatch slamdunk.sh count \
     --outputDir slamdunk/count_twotcreadcount \
     --reference "$genome.fa" \
-    --bed "$genome-transcripts.bed" \
+    --bed "slamseq/$genome-slamdunk.bed" \
     --max-read-length 151 \
     --min-base-qual 26 \
     --conversion-threshold 2 \
@@ -226,7 +226,7 @@ sbatch alleyoop.sh tccontext \
 sbatch alleyoop.sh utrrates \
     --outputDir slamdunk/alleyoop/utrrates \
     --reference "$genome.fa" \
-    --bed "$genome-transcripts.bed" \
+    --bed "slamseq/$genome-slamdunk.bed" \
     --multiTCStringency \
     --max-read-length 151 \
     --min-basequality 26 \
@@ -240,7 +240,7 @@ sbatch alleyoop.sh snpeval \
     --outputDir slamdunk/alleyoop/snpeval \
     --snp-directory slamdunk/snp \
     --reference "$genome.fa" \
-    --bed "$genome-transcripts.bed" \
+    --bed "slamseq/$genome-slamdunk.bed" \
     --min-coverage 10 \
     --var-fraction 0.8 \
     --multiTCStringency \
@@ -312,7 +312,7 @@ sbatch alleyoop.sh tcperreadpos \
 sbatch alleyoop.sh tcperutrpos \
     --outputDir slamdunk/alleyoop/tcperutrpos \
     --reference "$genome.fa" \
-    --bed "$genome-transcripts.bed" \
+    --bed "slamseq/$genome-slamdunk.bed" \
     --snp-directory slamdunk/snp \
     --max-read-length 151 \
     --min-basequality 26 \
