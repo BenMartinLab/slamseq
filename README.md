@@ -177,8 +177,8 @@ sbatch --cpus-per-task=16 --mem=80G --time=1-0 slamdunk.sh all \
 ### Count multiple TC mutations
 
 > [!TIP]
-> Reads with multiple TC mutations are more likely to be nascent RNAs than those with a single
-mutation.
+> Reads with multiple TC mutations are more likely to be nascent RNAs than
+> those with a single mutation.
 
 ```shell
 mv slamdunk/count slamdunk/count_onetcreadcount
@@ -332,8 +332,8 @@ sbatch alleyoop.sh dump \
 
 ### MultiQC (check Alleyoop output)
 
-Run MultiQC to get an HTML output from Alleyoop. This will make it easier to see if SlamDunk
-succeeded.
+Run MultiQC to get an HTML output from Alleyoop. This will make it easier to
+see if SlamDunk succeeded.
 
 ```shell
 sbatch multiqc.sh \
@@ -367,7 +367,8 @@ sbatch bedGraphToBigWig.sh
 ### Compute scale factors manually in Excel file based on read counts.
 
 > [!WARNING]
-> This section is using old code from François SLAM-seq pipeline and should be updated.
+> This section is using old code from François SLAM-seq pipeline and should
+> be updated.
 
 ```shell
 sbatch --array=samples_array filter-bam-mutation-count.sh
