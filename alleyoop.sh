@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-bmartin
-#SBATCH --time=1-00:00:00
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=4G
+#SBATCH --time=3:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=8G
 #SBATCH --output=alleyoop-%A.out
 
 set -euo pipefail
@@ -108,7 +108,7 @@ done
 # Validate arguments
 ###############################################################################
 
-if [[ -n "$mode" ]] || [[ "$mode" == -* ]]; then
+if [[ -z "$mode" ]] || [[ "$mode" == -* ]]; then
     echo "Error: Mode '$mode' is invalid." >&2
     exit 1
 fi

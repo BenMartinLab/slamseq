@@ -83,10 +83,6 @@ samplesheet=samplesheet.csv
 adapters=adapters.fa
 ```
 
-```shell
-cpus=$(cpus-slamseq.sh -s "$samplesheet" -m 64)
-```
-
 > [!IMPORTANT]
 > Change `hg38-spike-dm6` by your actual genome name.
 
@@ -163,7 +159,7 @@ python salmon-addgene.py --output salmon-quant/salmon-quantmerge-genes.txt --gtf
 ### SlamDunk
 
 ```shell
-sbatch slamdunk.sh all \
+sbatch --cpus-per-task=16 --mem=80G --time=1-0 slamdunk.sh all \
     --outputDir slamdunk \
     --reference "$genome.fa" \
     --bed "$genome-transcripts.bed" \
@@ -189,7 +185,7 @@ mv slamdunk/count slamdunk/count_onetcreadcount
 ```
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk.sh count \
+sbatch slamdunk.sh count \
     --outputDir slamdunk/count_twotcreadcount \
     --reference "$genome.fa" \
     --bed "$genome-transcripts.bed" \
@@ -207,7 +203,7 @@ sbatch --cpus-per-task="$cpus" --mem="$((cpus * 2))G" slamdunk.sh count \
 #### rates
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh rates \
+sbatch alleyoop.sh rates \
     --outputDir slamdunk/alleyoop/rates \
     --reference "$genome.fa" \
     --min-basequality 26 \
@@ -217,7 +213,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh rates \
 #### tccontext
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tccontext \
+sbatch alleyoop.sh tccontext \
     --outputDir slamdunk/alleyoop/tccontext \
     --reference "$genome.fa" \
     --min-basequality 26 \
@@ -227,7 +223,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tccontext \
 #### utrrates
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh utrrates \
+sbatch alleyoop.sh utrrates \
     --outputDir slamdunk/alleyoop/utrrates \
     --reference "$genome.fa" \
     --bed "$genome-transcripts.bed" \
@@ -240,7 +236,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh utrrates \
 #### snpeval
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh snpeval \
+sbatch alleyoop.sh snpeval \
     --outputDir slamdunk/alleyoop/snpeval \
     --snp-directory slamdunk/snp \
     --reference "$genome.fa" \
@@ -256,7 +252,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh snpeval \
 #### summary
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh summary \
+sbatch alleyoop.sh summary \
     --output slamdunk/alleyoop/summary_onetcreadcount.tsv \
     --tcountDir slamdunk/count_onetcreadcount \
     slamdunk/filter/*.bam
@@ -265,7 +261,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh summary \
 #### summary for >2 T>C conversions
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh summary \
+sbatch alleyoop.sh summary \
     --output slamdunk/alleyoop/summary_twotcreadcount.tsv \
     --tcountDir slamdunk/count_twotcreadcount \
     slamdunk/filter/*.bam
@@ -274,7 +270,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh summary \
 #### merge total read count
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
+sbatch alleyoop.sh merge \
     --output slamdunk/alleyoop/merge_totalreadcount.tsv \
     --column ReadCount \
     slamdunk/count_onetcreadcount/*.tsv
@@ -283,7 +279,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
 #### merge TC read count
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
+sbatch alleyoop.sh merge \
     --output slamdunk/alleyoop/merge_onetcreadcount.tsv \
     --column TcReadCount \
     slamdunk/count_onetcreadcount/*.tsv
@@ -292,7 +288,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
 #### merge >2 TC read count
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
+sbatch alleyoop.sh merge \
     --output slamdunk/alleyoop/merge_twotcreadcount.tsv \
     --column TcReadCount \
     slamdunk/count_twotcreadcount/*.tsv
@@ -301,7 +297,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh merge \
 #### tcperreadpos
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tcperreadpos \
+sbatch alleyoop.sh tcperreadpos \
     --outputDir slamdunk/alleyoop/tcperreadpos \
     --reference "$genome.fa" \
     --snp-directory slamdunk/snp \
@@ -313,7 +309,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tcperreadpos \
 #### tcperutrpos
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tcperutrpos \
+sbatch alleyoop.sh tcperutrpos \
     --outputDir slamdunk/alleyoop/tcperutrpos \
     --reference "$genome.fa" \
     --bed "$genome-transcripts.bed" \
@@ -326,7 +322,7 @@ sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh tcperutrpos \
 #### dump
 
 ```shell
-sbatch --cpus-per-task="$cpus" --mem="${cpus}G" alleyoop.sh dump \
+sbatch alleyoop.sh dump \
     --outputDir slamdunk/alleyoop/dump \
     --reference "$genome.fa" \
     --snp-directory slamdunk/snp \

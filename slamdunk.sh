@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-bmartin
-#SBATCH --time=1-00:00:00
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=80G
+#SBATCH --time=3:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=16G
 #SBATCH --output=slamdunk-%A.out
 
 set -euo pipefail
@@ -161,6 +161,7 @@ if [[ "${debug:-}" == true ]]; then
 fi
 echo "------------------------------------------------------------"
 echo
+echo "Mode:             $mode"
 echo "Threads:          $threads"
 echo "Jobs:             $jobs"
 echo "Threads per job:  $threads_per_job"
