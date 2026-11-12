@@ -198,7 +198,7 @@ sbatch slamdunk.sh count \
 ### Alleyoop
 
 > [!TIP]
-> All methods for Alleyoop can be launched in parallel.
+> All commands for Alleyoop can be launched at the same time.
 
 #### rates
 
