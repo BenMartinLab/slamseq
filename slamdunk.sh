@@ -35,23 +35,24 @@ script_dir="$(dirname "$script_path")"
 ###############################################################################
 
 show_help() {
-    echo
-    echo "Usage: $script_name [options] -- [extra args passed to slamdunk]"
-    echo
-    echo "SlamDunk mode:"
-    echo "  mode             MODE      SlamDunk mode (ex: all, count) (required)"
-    echo
-    echo "Wrapper options:"
-    echo "  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)"
-    echo "  -d, --dry-run              Print commands but do not execute"
-    echo "  -h, --help                 Show this help"
-    echo
-    echo "Everything after '--' or any unknown option is passed directly to slamdunk."
-    echo
-    echo "Example:"
-    echo "  sbatch --cpus-per-task=8 $script_name all --reference hg38.fa --bed hg38-transcripts.bed samplesheet.slamdunk.csv"
-    echo "  $script_name all --threads 8 --reference hg38.fa --bed hg38-transcripts.bed samplesheet.slamdunk.csv"
-    echo
+    cat << END_OF_HELP
+Usage: $script_name [options] -- [extra args passed to slamdunk]
+
+SlamDunk mode:
+  mode             MODE      SlamDunk mode (ex: all, count) (required)
+
+Wrapper options:
+  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)
+  -d, --dry-run              Print commands but do not execute
+  -h, --help                 Show this help
+
+Everything after '--' or any unknown option is passed directly to slamdunk.
+
+Example:
+  sbatch --cpus-per-task=8 $script_name all --reference hg38.fa --bed hg38-transcripts.bed samplesheet.slamdunk.csv
+  $script_name all --threads 8 --reference hg38.fa --bed hg38-transcripts.bed samplesheet.slamdunk.csv
+
+END_OF_HELP
 }
 
 ###############################################################################
@@ -143,31 +144,34 @@ fi
 # Logging + SLURM metadata + environment dump
 ###############################################################################
 
-echo "------------------------------------------------------------"
-echo "$script_name started at: $(date)"
-echo "Host: $(hostname)"
-echo "User: $USER"
-echo "Script: $script_name"
-echo
-echo "SLURM metadata:"
-echo "  Job ID:        ${SLURM_JOB_ID:-N/A}"
-echo "  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}"
-echo "  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}"
-echo "  Node:          ${SLURM_NODELIST:-N/A}"
-echo
-if [[ "${debug:-}" == true ]]; then
+cat << END_OF_SLURM_LOG
+------------------------------------------------------------
+$script_name started at: $(date)
+Host: $(hostname)
+User: $USER
+Script: $script_name
+
+SLURM metadata:
+  Job ID:        ${SLURM_JOB_ID:-N/A}
+  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}
+  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}
+  Node:          ${SLURM_NODELIST:-N/A}
+END_OF_SLURM_LOG
+if [[ ${debug:-} == true ]]; then
     echo "Environment dump:"
     env | sort
 fi
-echo "------------------------------------------------------------"
-echo
-echo "Mode:             $mode"
-echo "Threads:          $threads"
-echo "Jobs:             $jobs"
-echo "Threads per job:  $threads_per_job"
-echo "Dry-run:          $dry_run"
-echo
-echo
+cat << END_OF_PARAMETER_LOG
+------------------------------------------------------------
+
+Mode:             $mode
+Threads:          $threads
+Jobs:             $jobs
+Threads per job:  $threads_per_job
+Dry-run:          $dry_run
+
+
+END_OF_PARAMETER_LOG
 
 ###############################################################################
 # Build command

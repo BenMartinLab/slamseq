@@ -35,25 +35,26 @@ script_dir="$(dirname "$script_path")"
 ###############################################################################
 
 show_help() {
-    echo
-    echo "Usage: $script_name [options] -- [extra args passed to bbduk]"
-    echo
-    echo "Wrapper options:"
-    echo "  -S, --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)"
-    echo "  -o, --output-dir DIR       Output directory (default: bbduk)"
-    echo "  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)"
-    echo "  -j, --jobs       INT       Number of jobslots for parallel (default: 8)"
-    echo "  -d, --dry-run              Print commands but do not execute"
-    echo "  -h, --help                 Show this help"
-    echo
-    echo "Everything after '--' or any unknown option is passed directly to bbduk."
-    echo
-    echo "Do not specify FASTQ files; they are inferred from the samplesheet."
-    echo
-    echo "Example:"
-    echo "  sbatch --cpus-per-task=8 $script_name --samplesheet samples.csv ref=adapters.fa"
-    echo "  $script_name --samplesheet samples.csv ref=adapters.fa"
-    echo
+    cat << END_OF_HELP
+Usage: $script_name [options] -- [extra args passed to bbduk]
+
+Wrapper options:
+  -S, --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)
+  -o, --output-dir DIR       Output directory (default: bbduk)
+  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)
+  -j, --jobs       INT       Number of jobslots for parallel (default: 8)
+  -d, --dry-run              Print commands but do not execute
+  -h, --help                 Show this help
+
+Everything after '--' or any unknown option is passed directly to bbduk.
+
+Do not specify FASTQ files; they are inferred from the samplesheet.
+
+Example:
+  sbatch --cpus-per-task=8 $script_name --samplesheet samples.csv ref=adapters.fa
+  $script_name --samplesheet samples.csv ref=adapters.fa
+
+END_OF_HELP
 }
 
 ###############################################################################
@@ -157,32 +158,35 @@ fi
 # Logging + SLURM metadata + environment dump
 ###############################################################################
 
-echo "------------------------------------------------------------"
-echo "$script_name started at: $(date)"
-echo "Host: $(hostname)"
-echo "User: $USER"
-echo "Script: $script_name"
-echo
-echo "SLURM metadata:"
-echo "  Job ID:        ${SLURM_JOB_ID:-N/A}"
-echo "  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}"
-echo "  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}"
-echo "  Node:          ${SLURM_NODELIST:-N/A}"
-echo
-if [[ "${debug:-}" == true ]]; then
+cat << END_OF_SLURM_LOG
+------------------------------------------------------------
+$script_name started at: $(date)
+Host: $(hostname)
+User: $USER
+Script: $script_name
+
+SLURM metadata:
+  Job ID:        ${SLURM_JOB_ID:-N/A}
+  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}
+  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}
+  Node:          ${SLURM_NODELIST:-N/A}
+END_OF_SLURM_LOG
+if [[ ${debug:-} == true ]]; then
     echo "Environment dump:"
     env | sort
 fi
-echo "------------------------------------------------------------"
-echo
-echo "Samplesheet:  $samplesheet"
-echo "Output dir:   $output_dir"
-echo "Threads:      $threads"
-echo "Threads per job: $threads_per_job"
-echo "Jobs:         $jobs"
-echo "Dry-run:      $dry_run"
-echo
-echo
+cat << END_OF_PARAMETER_LOG
+------------------------------------------------------------
+
+Samplesheet:     $samplesheet
+Output dir:      $output_dir
+Threads:         $threads
+Threads per job: $threads_per_job
+Jobs:            $jobs
+Dry-run:         $dry_run
+
+
+END_OF_PARAMETER_LOG
 
 ###############################################################################
 # Build bbduk command
@@ -202,8 +206,9 @@ cmd=(
 parallel_parameters=("--verbose")
 if [[ "$dry_run" == true ]]; then
     parallel_parameters=("--dry-run")
+else
+    mkdir -p "${output_dir}"
 fi
-mkdir -p "${output_dir}"
 echo "Commands:"
 parallel --jobs "$jobs" \
     "${parallel_parameters[@]}" \

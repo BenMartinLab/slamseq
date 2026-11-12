@@ -35,23 +35,24 @@ script_dir="$(dirname "$script_path")"
 ###############################################################################
 
 show_help() {
-    echo
-    echo "Usage: $script_name MODE [options] -- [extra args passed to alleyoop]"
-    echo
-    echo "Alleyoop mode:"
-    echo "  mode             MODE      Alleyoop mode (ex: rates, tccontext, utrrates) (required)"
-    echo
-    echo "Wrapper options:"
-    echo "  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)"
-    echo "  -d, --dry-run              Print commands but do not execute"
-    echo "  -h, --help                 Show this help"
-    echo
-    echo "Everything after '--' or any unknown option is passed directly to alleyoop."
-    echo
-    echo "Example:"
-    echo "  sbatch --cpus-per-task=8 $script_name rates --reference hg38.fa"
-    echo "  $script_name rates --reference hg38.fa"
-    echo
+    cat << END_OF_HELP
+Usage: $script_name MODE [options] -- [extra args passed to alleyoop]
+
+Alleyoop mode:
+  mode             MODE      Alleyoop mode (ex: rates, tccontext, utrrates) (required)
+
+Wrapper options:
+  -t, --threads    INT       Threads (default: SLURM_CPUS_PER_TASK)
+  -d, --dry-run              Print commands but do not execute
+  -h, --help                 Show this help
+
+Everything after '--' or any unknown option is passed directly to alleyoop.
+
+Example:
+  sbatch --cpus-per-task=8 $script_name rates --reference hg38.fa
+  $script_name rates --reference hg38.fa
+
+END_OF_HELP
 }
 
 ###############################################################################
@@ -126,29 +127,32 @@ fi
 # Logging + SLURM metadata + environment dump
 ###############################################################################
 
-echo "------------------------------------------------------------"
-echo "$script_name started at: $(date)"
-echo "Host: $(hostname)"
-echo "User: $USER"
-echo "Script: $script_name"
-echo
-echo "SLURM metadata:"
-echo "  Job ID:        ${SLURM_JOB_ID:-N/A}"
-echo "  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}"
-echo "  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}"
-echo "  Node:          ${SLURM_NODELIST:-N/A}"
-echo
-if [[ "${debug:-}" == true ]]; then
+cat << END_OF_SLURM_LOG
+------------------------------------------------------------
+$script_name started at: $(date)
+Host: $(hostname)
+User: $USER
+Script: $script_name
+
+SLURM metadata:
+  Job ID:        ${SLURM_JOB_ID:-N/A}
+  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}
+  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}
+  Node:          ${SLURM_NODELIST:-N/A}
+END_OF_SLURM_LOG
+if [[ ${debug:-} == true ]]; then
     echo "Environment dump:"
     env | sort
 fi
-echo "------------------------------------------------------------"
-echo
-echo "Mode:         $mode"
-echo "Threads:      $threads"
-echo "Dry-run:      $dry_run"
-echo
-echo
+cat << END_OF_PARAMETER_LOG
+------------------------------------------------------------
+
+Mode:         $mode
+Threads:      $threads
+Dry-run:      $dry_run
+
+
+END_OF_PARAMETER_LOG
 
 ###############################################################################
 # Build slamdunk all command
@@ -166,17 +170,18 @@ cmd=(
     "${extra_parameters[@]}"
 )
 
+###############################################################################
+# Execute alleyoop
+###############################################################################
+
 echo "Command:"
 printf "  %q " "${cmd[@]}"
 echo
 echo
 
-###############################################################################
-# Execute alleyoop
-###############################################################################
-
 if [[ "$dry_run" == true ]]; then
     echo "Dry-run mode enabled — command not executed."
     exit 0
 fi
+
 "${cmd[@]}"

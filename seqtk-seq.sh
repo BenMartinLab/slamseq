@@ -35,25 +35,26 @@ script_dir="$(dirname "$script_path")"
 ###############################################################################
 
 show_help() {
-    echo
-    echo "Usage: $script_name [options] -- [extra args passed to seqtk seq]"
-    echo
-    echo "Wrapper options:"
-    echo "  --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)"
-    echo "  --output-dir DIR       Output directory (default: bbduk-rc)"
-    echo "  --fastq-dir  DIR       FASTQ directory (default: use paths in samplesheet)"
-    echo "  --jobs       INT       Number of jobslots for parallel (default: SLURM_CPUS_PER_TASK)"
-    echo "  --dry-run              Print commands but do not execute"
-    echo "  -h, --help             Show this help"
-    echo
-    echo "Everything after '--' or any unknown option is passed directly to seqtk seq."
-    echo
-    echo "Do not specify FASTQ files; they are inferred from the samplesheet."
-    echo
-    echo "Example:"
-    echo "  sbatch --cpus-per-task=8 $script_name --samplesheet samples.csv -r"
-    echo "  $script_name --samplesheet samples.csv -r"
-    echo
+    cat << END_OF_HELP
+Usage: $script_name [options] -- [extra args passed to seqtk seq]
+
+Wrapper options:
+  --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)
+  --output-dir DIR       Output directory (default: bbduk-rc)
+  --fastq-dir  DIR       FASTQ directory (default: use paths in samplesheet)
+  --jobs       INT       Number of jobslots for parallel (default: SLURM_CPUS_PER_TASK)
+  --dry-run              Print commands but do not execute
+  -h, --help             Show this help
+
+Everything after '--' or any unknown option is passed directly to seqtk seq.
+
+Do not specify FASTQ files; they are inferred from the samplesheet.
+
+Example:
+  sbatch --cpus-per-task=8 $script_name --samplesheet samples.csv -r
+  $script_name --samplesheet samples.csv -r
+
+END_OF_HELP
 }
 
 ###############################################################################
@@ -158,31 +159,34 @@ fi
 # Logging + SLURM metadata + environment dump
 ###############################################################################
 
-echo "------------------------------------------------------------"
-echo "$script_name started at: $(date)"
-echo "Host: $(hostname)"
-echo "User: $USER"
-echo "Script: $script_name"
-echo
-echo "SLURM metadata:"
-echo "  Job ID:        ${SLURM_JOB_ID:-N/A}"
-echo "  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}"
-echo "  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}"
-echo "  Node:          ${SLURM_NODELIST:-N/A}"
-echo
-if [[ "${debug:-}" == true ]]; then
+cat << END_OF_SLURM_LOG
+------------------------------------------------------------
+$script_name started at: $(date)
+Host: $(hostname)
+User: $USER
+Script: $script_name
+
+SLURM metadata:
+  Job ID:        ${SLURM_JOB_ID:-N/A}
+  Array Task ID: ${SLURM_ARRAY_TASK_ID:-N/A}
+  CPUs:          ${SLURM_CPUS_PER_TASK:-N/A}
+  Node:          ${SLURM_NODELIST:-N/A}
+END_OF_SLURM_LOG
+if [[ ${debug:-} == true ]]; then
     echo "Environment dump:"
     env | sort
 fi
-echo "------------------------------------------------------------"
-echo
-echo "Samplesheet:  $samplesheet"
-echo "FASTQ dir:    $fastq_dir"
-echo "Output dir:   $output_dir"
-echo "Jobs:         $jobs"
-echo "Dry-run:      $dry_run"
-echo
-echo
+cat << END_OF_PARAMETER_LOG
+------------------------------------------------------------
+
+Samplesheet:  $samplesheet
+FASTQ dir:    $fastq_dir
+Output dir:   $output_dir
+Jobs:         $jobs
+Dry-run:      $dry_run
+
+
+END_OF_PARAMETER_LOG
 
 ###############################################################################
 # Build seqtk command
@@ -245,7 +249,9 @@ export dry_run
 # Execute seqtk
 ###############################################################################
 
-mkdir -p "${output_dir}"
+if ! [[ "$dry_run" == true ]]; then
+    mkdir -p "${output_dir}"
+fi
 parallel -j "$jobs" \
     --env run_seqtk,cmd_str,output_dir,tmp_dir,dry_run \
     run_seqtk ::: "${fastq[@]}"

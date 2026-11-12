@@ -15,19 +15,20 @@ script_dir="$(dirname "$script_path")"
 ###############################################################################
 
 show_help() {
-    echo
-    echo "Shows the number of cpus to use for SLURM base on the number of FASTQ files to process."
-    echo
-    echo "Usage: $script_name [options]"
-    echo
-    echo "Wrapper options:"
-    echo "  -s, --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)"
-    echo "  -m, --max         INT      Maximum number of cpus for SLURM (default: 48)"
-    echo "  -h, --help                 Show this help"
-    echo
-    echo "Example:"
-    echo "  $script_name --samplesheet samples.csv --max 48"
-    echo
+    cat << END_OF_HELP
+Shows the number of cpus to use for SLURM base on the number of FASTQ files to process.
+
+Usage: $script_name [options]
+
+Wrapper options:
+  -s, --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)
+  -m, --max         INT      Maximum number of cpus for SLURM (default: 48)
+  -h, --help                 Show this help
+
+Example:
+  $script_name --samplesheet samples.csv --max 48
+
+END_OF_HELP
 }
 
 ###############################################################################
