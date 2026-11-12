@@ -158,6 +158,11 @@ END_OF_PARAMETER_LOG
 # Build slamdunk all command
 ###############################################################################
 
+threads_parameters=(--threads "$threads")
+if [[ "$mode" == "summary" ]] || [[ "$mode" == "merge" ]]; then
+    # Threads must not be used with summary or merge.
+    threads_parameters=()
+fi
 cmd=(
     apptainer exec
     --containall
@@ -166,7 +171,7 @@ cmd=(
     --bind "$PWD:/data" \
     "$slamdunk_container"
     alleyoop "$mode"
-    --threads "$threads"
+    "${threads_parameters[@]}"
     "${extra_parameters[@]}"
 )
 

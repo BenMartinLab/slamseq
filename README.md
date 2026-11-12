@@ -249,51 +249,6 @@ sbatch alleyoop.sh snpeval \
     slamdunk/filter/*.bam
 ```
 
-#### summary
-
-```shell
-sbatch alleyoop.sh summary \
-    --output slamdunk/alleyoop/summary_onetcreadcount.tsv \
-    --tcountDir slamdunk/count_onetcreadcount \
-    slamdunk/filter/*.bam
-```
-
-#### summary for >2 T>C conversions
-
-```shell
-sbatch alleyoop.sh summary \
-    --output slamdunk/alleyoop/summary_twotcreadcount.tsv \
-    --tcountDir slamdunk/count_twotcreadcount \
-    slamdunk/filter/*.bam
-```
-
-#### merge total read count
-
-```shell
-sbatch alleyoop.sh merge \
-    --output slamdunk/alleyoop/merge_totalreadcount.tsv \
-    --column ReadCount \
-    slamdunk/count_onetcreadcount/*.tsv
-```
-
-#### merge TC read count
-
-```shell
-sbatch alleyoop.sh merge \
-    --output slamdunk/alleyoop/merge_onetcreadcount.tsv \
-    --column TcReadCount \
-    slamdunk/count_onetcreadcount/*.tsv
-```
-
-#### merge >2 TC read count
-
-```shell
-sbatch alleyoop.sh merge \
-    --output slamdunk/alleyoop/merge_twotcreadcount.tsv \
-    --column TcReadCount \
-    slamdunk/count_twotcreadcount/*.tsv
-```
-
 #### tcperreadpos
 
 ```shell
@@ -329,6 +284,126 @@ sbatch alleyoop.sh dump \
     --min-basequality 26 \
     slamdunk/filter/*.bam
 ```
+
+#### summary
+
+```shell
+alleyoop.sh summary \
+    --output slamdunk/alleyoop/summary_onetcreadcount.tsv \
+    --tcountDir slamdunk/count_onetcreadcount \
+    slamdunk/filter/*.bam
+```
+
+<details>
+
+<summary>
+If the `alleyoop.sh summary` command fails, you can run it using `sbatch`.
+</summary>
+
+```shell
+sbatch --cpus-per-task=1 alleyoop.sh summary \
+    --output slamdunk/alleyoop/summary_onetcreadcount.tsv \
+    --tcountDir slamdunk/count_onetcreadcount \
+    slamdunk/filter/*.bam
+```
+
+</details>
+
+#### summary for >2 T>C conversions
+
+```shell
+alleyoop.sh summary \
+    --output slamdunk/alleyoop/summary_twotcreadcount.tsv \
+    --tcountDir slamdunk/count_twotcreadcount \
+    slamdunk/filter/*.bam
+```
+
+<details>
+
+<summary>
+If the `alleyoop.sh summary` command fails, you can run it using `sbatch`.
+</summary>
+
+```shell
+sbatch --cpus-per-task=1 alleyoop.sh summary \
+    --output slamdunk/alleyoop/summary_twotcreadcount.tsv \
+    --tcountDir slamdunk/count_twotcreadcount \
+    slamdunk/filter/*.bam
+```
+
+</details>
+
+#### merge total read count
+
+```shell
+alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_totalreadcount.tsv \
+    --column ReadCount \
+    slamdunk/count_onetcreadcount/*.tsv
+```
+
+<details>
+
+<summary>
+If the `alleyoop.sh merge` command fails, you can run it using `sbatch`.
+</summary>
+
+```shell
+sbatch --cpus-per-task=1 alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_totalreadcount.tsv \
+    --column ReadCount \
+    slamdunk/count_onetcreadcount/*.tsv
+```
+
+</details>
+
+#### merge TC read count
+
+```shell
+alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_onetcreadcount.tsv \
+    --column TcReadCount \
+    slamdunk/count_onetcreadcount/*.tsv
+```
+
+<details>
+
+<summary>
+If the `alleyoop.sh merge` command fails, you can run it using `sbatch`.
+</summary>
+
+```shell
+sbatch --cpus-per-task=1 alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_onetcreadcount.tsv \
+    --column TcReadCount \
+    slamdunk/count_onetcreadcount/*.tsv
+```
+
+</details>
+
+#### merge >2 TC read count
+
+```shell
+alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_twotcreadcount.tsv \
+    --column TcReadCount \
+    slamdunk/count_twotcreadcount/*.tsv
+```
+
+<details>
+
+<summary>
+If the `alleyoop.sh merge` command fails, you can run it using `sbatch`.
+</summary>
+
+```shell
+sbatch --cpus-per-task=1 alleyoop.sh merge \
+    --output slamdunk/alleyoop/merge_twotcreadcount.tsv \
+    --column TcReadCount \
+    slamdunk/count_twotcreadcount/*.tsv
+```
+
+</details>
 
 ### MultiQC (check Alleyoop output)
 
