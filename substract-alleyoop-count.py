@@ -70,7 +70,7 @@ def substract_onetc(total_reads_file: str, onetc_reads_file: str,
     output_writer.write("\t".join(headers))
     output_writer.write("\n")
 
-    for line in total_reads_file:
+    for line in total_reads_reader:
       columns = line.rstrip("\r\n").split("\t")
       onetc_columns = onetc_reads_reader.readline().rstrip("\r\n").split("\t")
       if columns[3] != onetc_columns[3]:

@@ -422,7 +422,10 @@ sbatch multiqc.sh \
 > Reads with no TC mutations are more likely to be old RNAs.
 
 ```shell
-python substract-alleyoop-count.py --total slamdunk/alleyoop/merge_totalreadcount.tsv --one slamdunk/alleyoop/merge_onetcreadcount.tsv --output slamdunk/alleyoop/merge_zeroreadcount.tsv
+substract-alleyoop-count.py \
+    --total slamdunk/alleyoop/merge_totalreadcount.tsv \ 
+    --one slamdunk/alleyoop/merge_onetcreadcount.tsv \
+    --output slamdunk/alleyoop/merge_zeroreadcount.tsv
 ```
 
 ## Create BigWig for use on [Genome Browser](https://genome.ucsc.edu/)
