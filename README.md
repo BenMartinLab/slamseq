@@ -252,7 +252,7 @@ sbatch alleyoop.sh snpeval \
 #### tcperreadpos
 
 ```shell
-sbatch alleyoop.sh tcperreadpos \
+sbatch --time=1-0 alleyoop.sh tcperreadpos \
     --outputDir slamdunk/alleyoop/tcperreadpos \
     --reference "$genome.fa" \
     --snp-directory slamdunk/snp \
@@ -264,7 +264,7 @@ sbatch alleyoop.sh tcperreadpos \
 #### tcperutrpos
 
 ```shell
-sbatch alleyoop.sh tcperutrpos \
+sbatch --time=1-0 alleyoop.sh tcperutrpos \
     --outputDir slamdunk/alleyoop/tcperutrpos \
     --reference "$genome.fa" \
     --bed "slamseq/$genome-slamdunk.bed" \
