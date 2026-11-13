@@ -423,7 +423,7 @@ sbatch multiqc.sh \
 
 ```shell
 substract-alleyoop-count.py \
-    --total slamdunk/alleyoop/merge_totalreadcount.tsv \ 
+    --total slamdunk/alleyoop/merge_totalreadcount.tsv \
     --one slamdunk/alleyoop/merge_onetcreadcount.tsv \
     --output slamdunk/alleyoop/merge_zeroreadcount.tsv
 ```
