@@ -413,7 +413,7 @@ see if SlamDunk succeeded.
 ```shell
 sbatch multiqc.sh \
   --outdir multiqc \
-  fastqc ${slamdunk_dir}/alleyoop
+  fastqc slamdunk/alleyoop
 ```
 
 ### Count no TC mutations
