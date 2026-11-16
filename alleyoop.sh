@@ -36,6 +36,8 @@ script_dir="$(dirname "$script_path")"
 
 show_help() {
     cat << END_OF_HELP
+Wrapper to run 'alleyoop' in selected mode. (Alleyoop is part of SlamDunk)
+
 Usage: $script_name MODE [options] -- [extra args passed to alleyoop]
 
 Alleyoop mode:
@@ -72,7 +74,7 @@ workdir=${SLURM_TMPDIR:-${PWD}}
 mode="${1:-}"
 shift
 
-extra_parameters=()
+extra_arguments=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -94,12 +96,12 @@ while [[ $# -gt 0 ]]; do
             ;;
         --)
             shift
-            extra_parameters+=("$@")
+            extra_arguments+=("$@")
             break
             ;;
         *)
             # Unknown argument → passthrough
-            extra_parameters+=("$1")
+            extra_arguments+=("$1")
             shift
             ;;
     esac
@@ -144,7 +146,7 @@ if [[ ${debug:-} == true ]]; then
     echo "Environment dump:"
     env | sort
 fi
-cat << END_OF_PARAMETER_LOG
+cat << END_OF_ARGUMENT_LOG
 ------------------------------------------------------------
 
 Mode:         $mode
@@ -152,7 +154,7 @@ Threads:      $threads
 Dry-run:      $dry_run
 
 
-END_OF_PARAMETER_LOG
+END_OF_ARGUMENT_LOG
 
 ###############################################################################
 # Build slamdunk all command
@@ -172,7 +174,7 @@ cmd=(
     "$slamdunk_container"
     alleyoop "$mode"
     "${threads_parameters[@]}"
-    "${extra_parameters[@]}"
+    "${extra_arguments[@]}"
 )
 
 ###############################################################################

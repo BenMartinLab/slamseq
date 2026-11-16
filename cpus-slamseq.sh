@@ -20,7 +20,7 @@ Shows the number of cpus to use for SLURM base on the number of FASTQ files to p
 
 Usage: $script_name [options]
 
-Wrapper options:
+Options:
   -s, --samplesheet FILE     Samplesheet CSV (default: samplesheet.csv)
   -m, --max         INT      Maximum number of cpus for SLURM (default: 48)
   -h, --help                 Show this help
