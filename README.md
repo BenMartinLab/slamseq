@@ -145,7 +145,8 @@ sbatch fastqc.sh ./*.fastq.gz bbduk*/*.fastq.gz
 ## Finding major isoform (Optional)
 
 > [!WARNING]
-> Salmon scripts do not work right now.
+> This section is using old code from François SLAM-seq pipeline and should
+> be updated.
 
 ```shell
 sbatch salmon-index.sh
@@ -463,6 +464,10 @@ copy-mutations-bw.sh
 ```
 
 ## Correlation for samples and dataset
+
+> [!WARNING]
+> This section is using old code from François SLAM-seq pipeline and should
+> be updated.
 
 ```shell
 sbatch correlation-summary.sh
