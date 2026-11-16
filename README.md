@@ -446,8 +446,19 @@ sbatch negate-bedgraph.sh slamdunk/count_*/*_mins.bedgraph
 Convert BedGraph files to BigWig.
 
 ```shell
-sbatch bedGraphToBigWig.sh
+bedgraph-to-bigwig.sh -g $genome.chrom.sizes slamdunk/count_*/*.bedgraph
 ```
+
+<details>
+<summary>
+If the `bedgraph-to-bigwig.sh` command fails, you can run it using `sbatch`.
+</summary>
+
+```shell
+sbatch bedgraph-to-bigwig.sh -g $genome.chrom.sizes slamdunk/count_*/*.bedgraph
+```
+
+</details>
 
 ### Compute scale factors manually in Excel file based on read counts.
 
