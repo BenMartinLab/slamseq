@@ -295,7 +295,6 @@ alleyoop.sh summary \
 ```
 
 <details>
-
 <summary>
 If the `alleyoop.sh summary` command fails, you can run it using `sbatch`.
 </summary>
@@ -319,7 +318,6 @@ alleyoop.sh summary \
 ```
 
 <details>
-
 <summary>
 If the `alleyoop.sh summary` command fails, you can run it using `sbatch`.
 </summary>
@@ -343,7 +341,6 @@ alleyoop.sh merge \
 ```
 
 <details>
-
 <summary>
 If the `alleyoop.sh merge` command fails, you can run it using `sbatch`.
 </summary>
@@ -367,7 +364,6 @@ alleyoop.sh merge \
 ```
 
 <details>
-
 <summary>
 If the `alleyoop.sh merge` command fails, you can run it using `sbatch`.
 </summary>
@@ -391,7 +387,6 @@ alleyoop.sh merge \
 ```
 
 <details>
-
 <summary>
 If the `alleyoop.sh merge` command fails, you can run it using `sbatch`.
 </summary>
@@ -433,8 +428,19 @@ substract-alleyoop-count.py \
 Negate scores on negative strands in BedGraph files create by SlamDunk.
 
 ```shell
-sbatch negate-bedGraph.sh
+negate-bedgraph.sh --jobs 8 slamdunk/count_*/*_mins.bedgraph
 ```
+
+<details>
+<summary>
+If the `negate-bedgraph.sh` command fails, you can run it using `sbatch`.
+</summary>
+
+```shell
+sbatch negate-bedgraph.sh slamdunk/count_*/*_mins.bedgraph
+```
+
+</details>
 
 Convert BedGraph files to BigWig.
 
