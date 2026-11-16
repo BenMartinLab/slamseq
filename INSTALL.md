@@ -7,8 +7,7 @@
     2. [Clone repository](#Clone-repository)
 2. [Updating scripts](#Updating-scripts)
 3. [Install dependencies](#Install-dependencies)
-    1. [UCSC utilities](#ucsc-utilities)
-    2. [SlamDunk](#slamdunk)
+    1. [SlamDunk](#slamdunk)
 
 ## Installing of the scripts
 
@@ -39,17 +38,6 @@ Move to slamseq scripts directory.
 
 ```shell
 cd /project/def-bmartin/scripts/slamseq
-```
-
-### UCSC utilities
-
-```shell
-wget -O bedGraphToBigWig https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v479/bedGraphToBigWig
-chmod 755 bedGraphToBigWig
-wget -O bigWigMerge https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v479/bigWigMerge
-chmod 755 bigWigMerge
-wget -O bigWigToBedGraph https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64.v479/bigWigToBedGraph
-chmod 755 bigWigToBedGraph
 ```
 
 ### SlamDunk
