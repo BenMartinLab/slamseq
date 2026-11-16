@@ -493,5 +493,7 @@ You may want to run MultiQC again to get the correlations in the report.
 
 ```shell
 rm -rf multiqc
-sbatch multiqc.sh
+sbatch multiqc.sh \
+  --outdir multiqc \
+  fastqc slamdunk/alleyoop slamdunk/correlation
 ```
