@@ -2,7 +2,7 @@
 
 This repository contains scripts to analyse SLAM-seq data on Alliance Canada servers.
 
-To install the scripts on Alliance Canada servers and download genomes, see [INSTALL.md](INSTALL.md)
+To install the scripts on Alliance Canada servers, see [INSTALL.md](INSTALL.md)
 
 > [!WARNING]
 > Many scripts requires a `genome` argument. This is not yet documented here.
