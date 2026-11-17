@@ -134,18 +134,24 @@ done
 # Validate arguments
 ###############################################################################
 
-if [[ ! -f "$samplesheet" ]]; then
-    echo "Error: Samplesheet '$samplesheet' does not exist." >&2
-    exit 1
-fi
+"${script_dir}/samplesheet.py" validate "$samplesheet"
 
 ###############################################################################
 # Get FASTQ file list
 ###############################################################################
 
-source "${script_dir}/functions.sh"
 fastq=()
-collect_fastq "$samplesheet" fastq
+while IFS=$'\t' read -r fastq_1 fastq_2; do
+    fastq+=("$fastq_1")
+    if [[ -n "$fastq_2" ]]; then
+        fastq+=("$fastq_2")
+    fi
+done < <(
+    "${script_dir}/samplesheet.py" columns \
+        "$samplesheet" \
+        --columns fastq_1 \
+        --optional fastq_2
+)
 
 ###############################################################################
 # Number of threads per job

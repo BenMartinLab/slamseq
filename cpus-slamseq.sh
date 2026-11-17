@@ -75,10 +75,7 @@ done
 # Validate arguments
 ###############################################################################
 
-if [[ ! -f "$samplesheet" ]]; then
-    echo "Error: Samplesheet '$samplesheet' does not exist." >&2
-    exit 1
-fi
+"${script_dir}/samplesheet.py" validate "$samplesheet"
 if ! [[ "$max_cpus" =~ ^[0-9]+$ ]]
 then
     echo "Error: Max CPUs '$max_cpus' is not an integer." >&2
@@ -90,10 +87,19 @@ fi
 # Find the number of CPUs to use for SlamDunk
 ###############################################################################
 
-source "${script_dir}/functions.sh"
 fastq=()
-collect_fastq "$samplesheet" fastq
+while IFS=$'\t' read -r fastq_1 fastq_2; do
+    fastq+=("$fastq_1")
+    if [[ -n "$fastq_2" ]]; then
+        fastq+=("$fastq_2")
+    fi
+done < <(
+    "${script_dir}/samplesheet.py" columns \
+        "$samplesheet" \
+        --columns fastq_1 \
+        --optional fastq_2
+)
 
 cpus="${#fastq[@]}"
-(( cpus > $max_cpus )) && cpus=$max_cpus
+(( cpus > max_cpus )) && cpus=$max_cpus
 echo "$cpus"
