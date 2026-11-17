@@ -25,7 +25,7 @@ class ScaleFactors:
   spike: float | None
 
 
-def readable_path(filepath: str):
+def readable_file(filepath: str):
   """
   Validate that file exists and is readable, or if it's "-" for stdin.
 
@@ -38,37 +38,61 @@ def readable_path(filepath: str):
 
   path = Path(filepath)
   if not path.exists():
-    # Raise ArgumentTypeError to make argparse show a clean error message
     raise argparse.ArgumentTypeError(f"ERROR: File not found: {filepath}")
-
   if not os.access(path, os.R_OK):
     raise argparse.ArgumentTypeError(f"ERROR: File not readable: {filepath}")
-
-  # If all checks pass, return the path
   return path
 
 
-def dir_path(dirpath: str):
+def writable_file(filepath: str):
+  """
+  Validate that file is writable, or if it's "-" for stdout.
+
+  :param filepath: path to file
+  :return: path to file
+  :raises argparse.ArgumentTypeError: if filepath is not writable
+  """
+  if filepath == "-":
+    return None  # Special case for stdin/stdout path name
+
+  path = Path(filepath)
+  if not path.parent.is_dir():
+    raise argparse.ArgumentTypeError(
+      f"ERROR: Parent directory of file not found: {filepath}")
+  if not os.access(path.parent, os.W_OK):
+    raise argparse.ArgumentTypeError(
+      f"ERROR: Parent directory of file not writable: {filepath}")
+  return path
+
+
+def readable_dir(dirpath: str):
   """
   Validate that directory exists.
 
   :param dirpath: path to directory
   :return: path to directory
   """
-  if not dirpath or os.path.isdir(dirpath):
-    return Path(dirpath)
-  else:
-    raise NotADirectoryError(dirpath)
+  if not dirpath:
+    return None
+
+  path = Path(dirpath)
+  if not path.is_dir():
+    raise argparse.ArgumentTypeError(f"ERROR: Directory not found: {dirpath}")
+  if not os.access(path, os.R_OK):
+    raise argparse.ArgumentTypeError(
+      f"ERROR: Directory not readable: {dirpath}")
+  return path
 
 
 BASE_SCALE = 1000000
 
 
-def main(argv: list[str] | None = None):
+def main(argv: list[str] | None = None) -> None:
   """
   Compute scale factors based on reads aligning to main genome and spike-in genome.
 
   :param argv: command line arguments
+  :return: None
   """
   parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -82,14 +106,14 @@ def main(argv: list[str] | None = None):
       * BAM files are already deduplicated if you want to count deduplicated reads
       
     It is recommended to use approximately 8 threads per allocated CPU on Alliance clusters such as Rorqual or Fir.""")
-  parser.add_argument("--samplesheet", type=readable_path,
+  parser.add_argument("--samplesheet", type=readable_file,
                       help="Sample sheet file where sample names will be used as labels")
-  parser.add_argument("-o", "--output",
-                      default="-",
+  parser.add_argument("-o", "--output", type=writable_file,
                       help="Tab delimited file containing multiple scale factor options  (default: standard output)")
-  parser.add_argument("-b", "--bam", type=dir_path, default="slamdunk/filter",
+  parser.add_argument("-b", "--bam", type=readable_dir,
+                      default="slamdunk/filter",
                       help="Folder where BAM files are located  (default: %(default)s)")
-  parser.add_argument("-s", "--spike_fasta", type=readable_path,
+  parser.add_argument("-s", "--spike_fasta", type=readable_file,
                       help="FASTA file containing spike-in genome")
   parser.add_argument("-S", "--scale", type=int, default=BASE_SCALE,
                       help="Base scale to use to compute scale factors  (default: %(default)s)")
@@ -101,7 +125,7 @@ def main(argv: list[str] | None = None):
 
   compute_scale_factors(
     samplesheet_file=args.samplesheet,
-    output_file=Path(args.output) if args.output != "-" else None,
+    output_file=args.output,
     bam_folder=args.bam,
     spike_fasta_file=args.spike_fasta,
     scale=args.scale,
