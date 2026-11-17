@@ -25,6 +25,8 @@ To install the scripts on Alliance Canada servers, see [INSTALL.md](INSTALL.md)
     4. [MultiQC (check Alleyoop output)](#multiqc-check-alleyoop-output)
     5. [Count no TC mutations](#count-no-tc-mutations)
 10. [Create BigWig for use on Genome Browser](#create-bigwig-for-use-on-genome-browser)
+    1. [Compute scale factors](#compute-scale-factors)
+    2. [Create BigWig files](#create-bigwig-files)
 11. [Correlation for samples and dataset](#correlation-for-samples-and-dataset)
 12. [MultiQC](#multiqc)
 
@@ -460,7 +462,18 @@ sbatch bedgraph-to-bigwig.sh -g $genome.chrom.sizes slamdunk/count_*/*.bedgraph
 
 </details>
 
-### Compute scale factors manually in Excel file based on read counts.
+### Compute scale factors
+
+```shell
+sbatch scale-factors.sh \
+    --samplesheet "$samplesheet" \
+    --output scale-factors.csv \
+    --spike_fasta "$spike.fa" \
+    --bam slamdunk/filter \
+    --mean
+```
+
+### Split BAM by mutation counts
 
 > [!WARNING]
 > This section is using old code from François SLAM-seq pipeline and should
@@ -468,6 +481,15 @@ sbatch bedgraph-to-bigwig.sh -g $genome.chrom.sizes slamdunk/count_*/*.bedgraph
 
 ```shell
 sbatch --array=samples_array filter-bam-mutation-count.sh
+```
+
+### Create BigWig files
+
+> [!WARNING]
+> This section is using old code from François SLAM-seq pipeline and should
+> be updated.
+
+```shell
 sbatch --array=samples_array genome-coverage.sh
 sbatch --array=samples_array genome-coverage.sh samples.txt $genome.chrom.sizes scale-factors-spikein.txt slamdunk -spikein
 sbatch --array=dataset_array merge-bw.sh

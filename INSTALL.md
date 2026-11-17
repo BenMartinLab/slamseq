@@ -8,6 +8,7 @@
 2. [Updating scripts](#Updating-scripts)
 3. [Install dependencies](#Install-dependencies)
     1. [SlamDunk](#slamdunk)
+    2. [Python environment](#python-environment)
 
 ## Installing of the scripts
 
@@ -44,4 +45,10 @@ cd /project/def-bmartin/scripts/slamseq
 
 ```shell
 wget -O slamdunk.sif https://g-88ccb6.6d81c.5898.data.globus.org/slamdunk/slamdunk-0.4.3-14270e5.sif
+```
+
+### Python environment
+
+```shell
+./create-env.sh
 ```
