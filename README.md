@@ -21,9 +21,10 @@ To install the scripts on Alliance Canada servers, see [INSTALL.md](INSTALL.md)
 9. [Align reads and process TC mutations](#align-reads-and-process-tc-mutations)
     1. [SlamDunk](#slamdunk)
     2. [Count multiple TC mutations](#count-multiple-tc-mutations)
-    3. [Alleyoop](#alleyoop)
-    4. [MultiQC (check Alleyoop output)](#multiqc-check-alleyoop-output)
-    5. [Count no TC mutations](#count-no-tc-mutations)
+    3. [Index BAM files](#index-bam-files)
+    4. [Alleyoop](#alleyoop)
+    5. [MultiQC (check Alleyoop output)](#multiqc-check-alleyoop-output)
+    6. [Count no TC mutations](#count-no-tc-mutations)
 10. [Create BigWig for use on Genome Browser](#create-bigwig-for-use-on-genome-browser)
     1. [Compute scale factors](#compute-scale-factors)
     2. [Create BigWig files](#create-bigwig-files)
@@ -196,6 +197,13 @@ sbatch slamdunk.sh count \
     --min-base-qual 26 \
     --conversion-threshold 2 \
     slamdunk/filter/*.bam
+```
+
+### Index BAM files
+
+```shell
+module load samtools
+find slamdunk/filter/*.bam | parallel --jobs 8 --verbose samtools index
 ```
 
 ### Alleyoop
