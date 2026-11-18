@@ -149,7 +149,7 @@ while IFS=$'\t' read -r fastq_1 fastq_2; do
         fastq+=("$fastq_2")
     fi
 done < <(
-    "${script_dir}/samplesheet.py" columns \
+    "${script_dir}/samplesheet.py" rows \
         "$samplesheet" \
         --columns fastq_1 \
         --optional fastq_2
