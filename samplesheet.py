@@ -34,6 +34,46 @@ def samplesheet_arg(filepath: str):
   return path
 
 
+def writable_file(filepath: str):
+  """
+  Validate that file is writable, or if it's "-" for stdout.
+
+  :param filepath: path to file
+  :return: path to file
+  :raises argparse.ArgumentTypeError: if filepath is not writable
+  """
+  if filepath == "-":
+    return None  # Special case for stdin/stdout path name
+
+  path = Path(filepath)
+  if not path.parent.is_dir():
+    raise argparse.ArgumentTypeError(
+      f"ERROR: Parent directory of file not found: {filepath}")
+  if not os.access(path.parent, os.W_OK):
+    raise argparse.ArgumentTypeError(
+      f"ERROR: Parent directory of file not writable: {filepath}")
+  return path
+
+
+def readable_dir(dirpath: str):
+  """
+  Validate that directory exists.
+
+  :param dirpath: path to directory
+  :return: path to directory
+  """
+  if not dirpath:
+    return None
+
+  path = Path(dirpath)
+  if not path.is_dir():
+    raise argparse.ArgumentTypeError(f"ERROR: Directory not found: {dirpath}")
+  if not os.access(path, os.R_OK):
+    raise argparse.ArgumentTypeError(
+      f"ERROR: Directory not readable: {dirpath}")
+  return path
+
+
 def validate(args: argparse.Namespace):
   """
   Validate samplesheet headers and content.
@@ -137,6 +177,52 @@ def parse_rows(samplesheet: Path, required_columns: list[str] | None = None,
       yield values
 
 
+def convert(args: argparse.Namespace) -> None:
+  """
+  Convert SLAM-seq samplesheet into SlamDunk samplesheet.
+
+  :param args: command line arguments
+  :return: None
+  """
+  slamdunk = Path(
+    args.slamdunk) if args.slamdunk else args.samplesheet.with_suffix(
+    ".slamdunk.csv")
+  write_slamdunk(args.samplesheet, slamdunk, args.fastq)
+
+
+def write_slamdunk(samplesheet: Path,
+    slamdunk: Path,
+    fastq_dir: Path):
+  """
+  Writes samplesheet file for use with SlamDunk.
+
+  :param samplesheet: samplesheet file
+  :param slamdunk: where to write samplesheet in SlamDunk format
+  :param fastq_dir: change parent directory of FASTQ files to this path
+  """
+  with samplesheet.open("r",
+                        encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in, slamdunk.open(
+    "w") as slamdunk_out:
+    reader = csv.DictReader(samplesheet_in)
+    writer = csv.writer(slamdunk_out)
+    index = 0
+    for row in reader:
+      index += 1
+      fastq1 = Path(row[FASTQ_1_COLUMN])
+      fastq2 = Path(row[FASTQ_2_COLUMN]) if FASTQ_2_COLUMN in row and row[
+        FASTQ_2_COLUMN].strip() else None
+      if fastq_dir:
+        fastq1 = fastq_dir.joinpath(fastq1.name)
+        fastq2 = fastq_dir.joinpath(fastq2.name) if fastq2 else None
+      writer.writerow(
+        [fastq1, row[SAMPLE_COLUMN] + "_R1",
+         str(index), str(index)])
+      if fastq2:
+        writer.writerow(
+          [fastq2, row[SAMPLE_COLUMN] + "_R2",
+           str(index), str(index)])
+
+
 def main(argv: list[str] | None = None):
   """
   Samplesheet utilities.
@@ -207,6 +293,29 @@ def main(argv: list[str] | None = None):
     help="Header of optional columns to read. Missing columns will be present in the output but will contain empty strings"
   )
   rows_parser.set_defaults(func=rows)
+
+  convert_parser = subparsers.add_parser(
+    "convert",
+    help="Convert SLAM-seq samplesheet into SlamDunk samplesheet.",
+    description="Convert SLAM-seq samplesheet into SlamDunk samplesheet."
+  )
+  convert_parser.add_argument(
+    "samplesheet",
+    type=samplesheet_arg,
+    help="Input samplesheet CSV file ('-' for stdin)."
+  )
+  convert_parser.add_argument(
+    "-s", "--slamdunk",
+    type=writable_file,
+    help="Output SlamDunk samplesheet file.  (default: (samplesheet without extension) + '.slamdunk.csv')"
+  )
+  convert_parser.add_argument(
+    "-f", "--fastq",
+    help="Directory containing FASTQ files to be processed by SlamDunk.  (default: %(default)s)",
+    type=readable_dir,
+    default="bbduk"
+  )
+  convert_parser.set_defaults(func=convert)
 
   args = parser.parse_args(argv)
   args.func(args)

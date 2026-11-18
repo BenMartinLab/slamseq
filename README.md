@@ -106,14 +106,14 @@ The samplesheet file must be converted to other formats to run the pipeline. Sim
 following command.
 
 ```shell
-convert-samplesheet.py $samplesheet
+samplesheet.py convert $samplesheet
 ```
 
 > [!IMPORTANT]
 > If your sequences need to be reversed complement, use this command instead.
 
 ```shell
-convert-samplesheet.py $samplesheet --fastq bbduk-rc
+samplesheet.py convert $samplesheet --fastq bbduk-rc
 ```
 
 ## Trimming reads
