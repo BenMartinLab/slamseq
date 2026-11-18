@@ -89,7 +89,7 @@ def validate_samplesheet(samplesheet: Path) -> None:
       errors.append(f"Missing columns: {missing_columns}")
     for row in reader:
       for column in REQUIRED_COLUMNS:
-        if not row[column].strip():
+        if column in row and not row[column].strip():
           errors.append(f"Row {reader.line_num}: '{column}' is empty")
       for fastq_column in [FASTQ_1_COLUMN, FASTQ_2_COLUMN]:
         if fastq_column in row and row[fastq_column] and not os.path.exists(
@@ -97,7 +97,7 @@ def validate_samplesheet(samplesheet: Path) -> None:
           warnings.append(
             f"Row {reader.line_num}: '{fastq_column}' not found: '{row[fastq_column]}'")
   if errors:
-    print(f"Found {len(errors)} validation error(s):", file=sys.stderr)
+    print(f"Found {len(errors)} error(s):", file=sys.stderr)
     for error in errors:
       print(f"  - {error}", file=sys.stderr)
   if warnings:
