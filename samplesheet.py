@@ -55,25 +55,6 @@ def writable_file(filepath: str):
   return path
 
 
-def readable_dir(dirpath: str):
-  """
-  Validate that directory exists.
-
-  :param dirpath: path to directory
-  :return: path to directory
-  """
-  if not dirpath:
-    return None
-
-  path = Path(dirpath)
-  if not path.is_dir():
-    raise argparse.ArgumentTypeError(f"ERROR: Directory not found: {dirpath}")
-  if not os.access(path, os.R_OK):
-    raise argparse.ArgumentTypeError(
-      f"ERROR: Directory not readable: {dirpath}")
-  return path
-
-
 def validate(args: argparse.Namespace):
   """
   Validate samplesheet headers and content.
@@ -97,6 +78,7 @@ def validate_samplesheet(samplesheet: Path) -> None:
   :return: None
   """
   errors = []
+  warnings = []
   with samplesheet.open("r",
                         encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in:
     reader = csv.DictReader(samplesheet_in)
@@ -108,16 +90,21 @@ def validate_samplesheet(samplesheet: Path) -> None:
     for row in reader:
       for column in REQUIRED_COLUMNS:
         if not row[column].strip():
-          errors.append(f"Row {reader.line_num}: {column} is empty")
+          errors.append(f"Row {reader.line_num}: '{column}' is empty")
       for fastq_column in [FASTQ_1_COLUMN, FASTQ_2_COLUMN]:
         if fastq_column in row and row[fastq_column] and not os.path.exists(
             row[fastq_column]):
-          errors.append(
-            f"Row {reader.line_num}: {fastq_column} not found: {row[fastq_column]}")
+          warnings.append(
+            f"Row {reader.line_num}: '{fastq_column}' not found: '{row[fastq_column]}'")
   if errors:
     print(f"Found {len(errors)} validation error(s):", file=sys.stderr)
     for error in errors:
       print(f"  - {error}", file=sys.stderr)
+  if warnings:
+    print(f"Found {len(warnings)} warning(s):", file=sys.stderr)
+    for warning in warnings:
+      print(f"  - {warning}", file=sys.stderr)
+  if errors:
     sys.exit(1)
 
 
@@ -163,13 +150,13 @@ def parse_rows(samplesheet: Path, required_columns: list[str] | None = None,
       column not in (reader.fieldnames if reader.fieldnames else [])]
     if missing_columns:
       raise argparse.ArgumentTypeError(
-        f"ERROR: Columns {missing_columns} not found in samplesheet {samplesheet}")
+        f"ERROR: Columns {missing_columns} not found in samplesheet")
     for row in reader:
       values = []
       for column in required_columns:
         if not row[column].strip():
           raise argparse.ArgumentTypeError(
-            f"ERROR: Empty value found in required column '{column}' at row {reader.line_num} of samplesheet {samplesheet}"
+            f"ERROR: Empty value found in required column '{column}' at row {reader.line_num} of samplesheet"
           )
         values.append(row[column])
       values.extend([row[column] if column in row else ""
@@ -200,6 +187,10 @@ def write_slamdunk(samplesheet: Path,
   :param slamdunk: where to write samplesheet in SlamDunk format
   :param fastq_dir: change parent directory of FASTQ files to this path
   """
+  if fastq_dir and not fastq_dir.exists():
+    print(f"WARNING: FASTQ directory '{fastq_dir}' does not exists yet.\n",
+          file=sys.stderr)
+  print(f"Creating sampleheet '{slamdunk}' for SlamDunk.", file=sys.stderr)
   with samplesheet.open("r",
                         encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in, slamdunk.open(
     "w") as slamdunk_out:
@@ -225,7 +216,7 @@ def write_slamdunk(samplesheet: Path,
 
 def main(argv: list[str] | None = None):
   """
-  Samplesheet utilities.
+  Samplesheet utilities for SLAM-seq.
 
   :param argv: command line arguments
   :return: None
@@ -243,7 +234,7 @@ def main(argv: list[str] | None = None):
     help="Validate samplesheet",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     description=
-    f"""Validate samplesheet headers and content.
+    f"""Validate SLAM-seq samplesheet headers and content.
     
     Validation will check for:
       * Required columns based on headers - required columns are {REQUIRED_COLUMNS}
@@ -312,7 +303,7 @@ def main(argv: list[str] | None = None):
   convert_parser.add_argument(
     "-f", "--fastq",
     help="Directory containing FASTQ files to be processed by SlamDunk.  (default: %(default)s)",
-    type=readable_dir,
+    type=Path,
     default="bbduk"
   )
   convert_parser.set_defaults(func=convert)
