@@ -3,6 +3,7 @@
 import argparse
 import csv
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Iterator
@@ -167,6 +168,90 @@ def parse_rows(samplesheet: Path, required_columns: list[str] | None = None,
       yield values
 
 
+def merge(args: argparse.Namespace) -> None:
+  """
+  Merge FASTQ files for each sample.
+
+  The default output filenames are:
+    * f\"{sample}_R1.fastq.gz\"
+    * f\"{sample}_R2.fastq.gz\"
+
+  :param args: command line arguments
+  :return: None
+  """
+  samplesheet_merged = args.merged
+  if not samplesheet_merged:
+    samplesheet_merged = args.samplesheet.with_suffix(".merged.csv")
+  merge_fastq_samples(args.samplesheet, samplesheet_merged, args.output)
+
+
+def merge_fastq_samples(samplesheet: Path, samplesheet_merged: Path,
+    output_dir: Path) -> None:
+  """
+  Merge FASTQ files for each sample.
+
+  :param samplesheet: path to samplesheet file
+  :param samplesheet_merged: output file of samplesheet with merged FASTQs
+  :param output_dir: output directory
+  :return: None
+  """
+  fastqs_1 = {}
+  fastqs_2 = {}
+  metadata = {}
+  columns = {}
+  with samplesheet.open("r",
+                        encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in:
+    reader = csv.DictReader(samplesheet_in)
+    columns = reader.fieldnames if reader.fieldnames else []
+    for row in reader:
+      sample = row[SAMPLE_COLUMN]
+      if not sample in metadata:
+        metadata[sample] = {column: row[column] for column in columns}
+      if not sample in fastqs_1:
+        fastqs_1[sample] = []
+      fastqs_1[sample].append(Path(row[FASTQ_1_COLUMN]))
+      if FASTQ_2_COLUMN in row and row[
+        FASTQ_2_COLUMN]:
+        if not sample in fastqs_2:
+          fastqs_2[sample] = []
+        fastqs_2[sample].append(Path(row[FASTQ_2_COLUMN]))
+  output_dir.mkdir(parents=True, exist_ok=True)
+  for sample in fastqs_1:
+    metadata[sample][FASTQ_1_COLUMN] = output_dir / f"{sample}_R1.fastq.gz"
+    if sample in fastqs_2:
+      metadata[sample][FASTQ_2_COLUMN] = output_dir / f"{sample}_R2.fastq.gz"
+  print(
+    f"MESSAGE: Saving samplesheet with merged FASTQ to {samplesheet_merged}",
+    file=sys.stderr)
+  with samplesheet_merged.open("w") as samplesheet_out:
+    writer = csv.DictWriter(samplesheet_out, columns)
+    writer.writeheader()
+    for sample in metadata:
+      writer.writerow(metadata[sample])
+  for sample in fastqs_1:
+    merge_fastq_sample(fastqs_1[sample], metadata[sample][FASTQ_1_COLUMN])
+    if sample in fastqs_2:
+      merge_fastq_sample(fastqs_2[sample], metadata[sample][FASTQ_2_COLUMN])
+
+
+def merge_fastq_sample(fastq_files: list[Path], output_file: Path) -> None:
+  """
+  Merge FASTQ files.
+
+  :param fastq_files: FASTQ files to merge
+  :param output_file: output file
+  :return: None
+  """
+  print(
+    f"MESSAGE: Merging files {[fastq.name for fastq in fastq_files]} into {output_file}",
+    file=sys.stderr)
+  with open(output_file, "wb") as output_out:
+    for fastq_file in fastq_files:
+      with open(fastq_file, "rb") as fastq_in:
+        # noinspection bad-argument-type
+        shutil.copyfileobj(fastq_in, output_out)
+
+
 def convert(args: argparse.Namespace) -> None:
   """
   Convert SLAM-seq samplesheet into SlamDunk samplesheet.
@@ -291,6 +376,36 @@ def main(argv: list[str] | None = None):
     help="Write output in CSV format."
   )
   rows_parser.set_defaults(func=rows)
+
+  merge_parser = subparsers.add_parser(
+    "merge",
+    help="Merge FASTQ files for each sample.",
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description=
+    """Merge FASTQ files for each sample.
+
+    The default output filenames are:
+      * f\"{sample}_R1.fastq.gz\"
+      * f\"{sample}_R2.fastq.gz\"
+    """
+  )
+  merge_parser.add_argument(
+    "samplesheet",
+    type=samplesheet_arg,
+    help="Input samplesheet CSV file ('-' for stdin)."
+  )
+  merge_parser.add_argument(
+    "-m", "--merged",
+    type=writable_file,
+    help="Output samplesheet containing merged FASTQ files.  (default: (samplesheet without extension) + '.merged.csv')"
+  )
+  merge_parser.add_argument(
+    "-o", "--output",
+    type=writable_file,
+    default=".",
+    help="Output directory.  (default: current directory)"
+  )
+  merge_parser.set_defaults(func=merge)
 
   convert_parser = subparsers.add_parser(
     "convert",
