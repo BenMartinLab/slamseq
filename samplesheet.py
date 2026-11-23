@@ -56,6 +56,23 @@ def writable_file(filepath: str):
   return path
 
 
+def read_samplesheet(samplesheet: Path) -> Iterator[dict[str, str]]:
+  """
+  Returns all rows from samplesheet file.
+
+  :param samplesheet: path to samplesheet file
+  :return: column values of each row
+  """
+  with samplesheet.open("r",
+                        encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in:
+    reader = csv.DictReader(samplesheet_in)
+    for row in reader:
+      yield {
+        key: value.strip()
+        for key, value in row.items()
+      }
+
+
 def validate(args: argparse.Namespace):
   """
   Validate samplesheet headers and content.
@@ -80,23 +97,22 @@ def validate_samplesheet(samplesheet: Path) -> None:
   """
   errors = []
   warnings = []
-  with samplesheet.open("r",
-                        encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in:
-    reader = csv.DictReader(samplesheet_in)
-    missing_columns = [
-      column for column in REQUIRED_COLUMNS if
-      column not in (reader.fieldnames if reader.fieldnames else [])]
-    if missing_columns:
-      errors.append(f"Missing columns: {missing_columns}")
-    for row in reader:
-      for column in REQUIRED_COLUMNS:
-        if column in row and not row[column].strip():
-          errors.append(f"Row {reader.line_num}: '{column}' is empty")
-      for fastq_column in [FASTQ_1_COLUMN, FASTQ_2_COLUMN]:
-        if fastq_column in row and row[fastq_column] and not os.path.exists(
-            row[fastq_column]):
-          warnings.append(
-            f"Row {reader.line_num}: '{fastq_column}' not found: '{row[fastq_column]}'")
+  for row_num, row in enumerate(read_samplesheet(samplesheet), start=2):
+    if row_num == 2:
+      # Check missing columns once.
+      missing_columns = [
+        column for column in REQUIRED_COLUMNS if
+        column not in row]
+      if missing_columns:
+        errors.append(f"Missing columns: {missing_columns}")
+    for column in REQUIRED_COLUMNS:
+      if column in row and not row[column].strip():
+        errors.append(f"Row {row_num}: '{column}' is empty")
+    for fastq_column in [FASTQ_1_COLUMN, FASTQ_2_COLUMN]:
+      if fastq_column in row and row[fastq_column] and not os.path.exists(
+          row[fastq_column]):
+        warnings.append(
+          f"Row {row_num}: '{fastq_column}' not found: '{row[fastq_column]}'")
   if errors:
     print(f"Found {len(errors)} error(s):", file=sys.stderr)
     for error in errors:
@@ -125,47 +141,51 @@ def rows(args: argparse.Namespace) -> None:
   :param args: command line arguments
   :return: None
   """
-  delimiter = "," if args.csv else "\t"
-  quoting = csv.QUOTE_MINIMAL if args.csv else csv.QUOTE_NONE
-  csv_writer = csv.writer(sys.stdout, delimiter=delimiter, quoting=quoting)
-  for values in parse_rows(args.samplesheet, args.columns, args.optional):
-    csv_writer.writerow(values)
+  rows_samplesheet(args.samplesheet, args.columns,
+                   args.optional, args.csv)
 
 
-def parse_rows(samplesheet: Path, required_columns: list[str] | None = None,
-    optional_columns: list[str] | None = None) -> Iterator[list[str]]:
+def rows_samplesheet(samplesheet: Path,
+    required_columns: list[str] | None = None,
+    optional_columns: list[str] | None = None,
+    output_csv: bool = False) -> None:
   """
   Returns selected columns from samplesheet file.
 
   :param samplesheet: path to samplesheet file
   :param required_columns: required columns to read
   :param optional_columns: optional columns to read
-  :return: values of columns
+  :param output_csv: output CSV instead of tab delimited
+  :return: None
   """
   if not required_columns:
     required_columns = []
   if not optional_columns:
     optional_columns = []
-  with samplesheet.open("r",
-                        encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in:
-    reader = csv.DictReader(samplesheet_in)
-    missing_columns = [
-      column for column in required_columns if
-      column not in (reader.fieldnames if reader.fieldnames else [])]
-    if missing_columns:
-      raise argparse.ArgumentTypeError(
-        f"ERROR: Columns {missing_columns} not found in samplesheet")
-    for row in reader:
-      values = []
-      for column in required_columns:
-        if not row[column].strip():
-          raise argparse.ArgumentTypeError(
-            f"ERROR: Empty value found in required column '{column}' at row {reader.line_num} of samplesheet"
-          )
-        values.append(row[column])
-      values.extend([row[column] if column in row else ""
-                     for column in optional_columns])
-      yield values
+  samplesheet_rows = []
+  for row_num, row in enumerate(read_samplesheet(samplesheet), start=2):
+    if row_num == 2:
+      # Check missing columns once.
+      missing_columns = [
+        column for column in REQUIRED_COLUMNS if
+        column not in row]
+      if missing_columns:
+        raise argparse.ArgumentTypeError(
+          f"ERROR: Columns {missing_columns} not found in samplesheet")
+    values = []
+    for column in required_columns:
+      if not row[column]:
+        raise argparse.ArgumentTypeError(
+          f"ERROR: Empty value found in required column '{column}' at row {row_num} of samplesheet")
+      values.append(row[column])
+    values.extend([row[column] if column in row else ""
+                   for column in optional_columns])
+    samplesheet_rows.append(values)
+  delimiter = "," if output_csv else "\t"
+  quoting = csv.QUOTE_MINIMAL if output_csv else csv.QUOTE_NONE
+  csv_writer = csv.writer(sys.stdout, delimiter=delimiter, quoting=quoting)
+  for values in samplesheet_rows:
+    csv_writer.writerow(values)
 
 
 def merge(args: argparse.Namespace) -> None:
@@ -199,23 +219,28 @@ def merge_fastq_samples(samplesheet: Path, samplesheet_merged: Path,
   fastqs_2 = {}
   metadata = {}
   columns = {}
-  with samplesheet.open("r",
-                        encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in:
-    reader = csv.DictReader(samplesheet_in)
-    columns = reader.fieldnames if reader.fieldnames else []
-    for row in reader:
-      sample = row[SAMPLE_COLUMN]
-      if not sample in metadata:
-        metadata[sample] = {column: row[column] for column in columns}
-      if not sample in fastqs_1:
-        fastqs_1[sample] = []
-      fastqs_1[sample].append(Path(row[FASTQ_1_COLUMN]))
-      if FASTQ_2_COLUMN in row and row[
-        FASTQ_2_COLUMN]:
-        if not sample in fastqs_2:
-          fastqs_2[sample] = []
-        fastqs_2[sample].append(Path(row[FASTQ_2_COLUMN]))
-  output_dir.mkdir(parents=True, exist_ok=True)
+  for row_num, row in enumerate(read_samplesheet(samplesheet), start=2):
+    if row_num == 2:
+      columns = list(row.keys())
+      # Check missing columns once.
+      missing_columns = [
+        column for column in REQUIRED_COLUMNS if
+        column not in row]
+      if missing_columns:
+        raise argparse.ArgumentTypeError(
+          f"ERROR: Columns {missing_columns} not found in samplesheet")
+    sample = row[SAMPLE_COLUMN]
+    if not sample in metadata:
+      metadata[sample] = row.copy()
+    if not sample in fastqs_1:
+      fastqs_1[sample] = []
+    fastqs_1[sample].append(Path(row[FASTQ_1_COLUMN]))
+    if FASTQ_2_COLUMN in row and row[
+      FASTQ_2_COLUMN]:
+      if not sample in fastqs_2:
+        fastqs_2[sample] = []
+      fastqs_2[sample].append(Path(row[FASTQ_2_COLUMN]))
+  # Set output files.
   for sample in fastqs_1:
     metadata[sample][FASTQ_1_COLUMN] = output_dir / f"{sample}_R1.fastq.gz"
     if sample in fastqs_2:
@@ -223,11 +248,14 @@ def merge_fastq_samples(samplesheet: Path, samplesheet_merged: Path,
   print(
     f"MESSAGE: Saving samplesheet with merged FASTQ to {samplesheet_merged}",
     file=sys.stderr)
+  # Save merged samplesheet.
   with samplesheet_merged.open("w") as samplesheet_out:
     writer = csv.DictWriter(samplesheet_out, columns)
     writer.writeheader()
     for sample in metadata:
       writer.writerow(metadata[sample])
+  # Merge FASTQ files.
+  output_dir.mkdir(parents=True, exist_ok=True)
   for sample in fastqs_1:
     merge_fastq_sample(fastqs_1[sample], metadata[sample][FASTQ_1_COLUMN])
     if sample in fastqs_2:
@@ -243,7 +271,7 @@ def merge_fastq_sample(fastq_files: list[Path], output_file: Path) -> None:
   :return: None
   """
   print(
-    f"MESSAGE: Merging files {[fastq.name for fastq in fastq_files]} into {output_file}",
+    f"MESSAGE: Merging files {[fastq.name for fastq in fastq_files]} into {output_file}.",
     file=sys.stderr)
   with open(output_file, "wb") as output_out:
     for fastq_file in fastq_files:
@@ -278,14 +306,12 @@ def write_slamdunk(samplesheet: Path,
   if fastq_dir and not fastq_dir.exists():
     print(f"WARNING: FASTQ directory '{fastq_dir}' does not exists yet.\n",
           file=sys.stderr)
-  print(f"Creating sampleheet '{slamdunk}' for SlamDunk.", file=sys.stderr)
-  with samplesheet.open("r",
-                        encoding="utf-8-sig") if samplesheet else sys.stdin as samplesheet_in, slamdunk.open(
-    "w") as slamdunk_out:
-    reader = csv.DictReader(samplesheet_in)
+  print(f"MESSAGE: Creating sampleheet '{slamdunk}' for SlamDunk.",
+        file=sys.stderr)
+  with slamdunk.open("w") as slamdunk_out:
     writer = csv.writer(slamdunk_out)
     index = 0
-    for row in reader:
+    for row_num, row in enumerate(read_samplesheet(samplesheet), start=2):
       index += 1
       fastq1 = Path(row[FASTQ_1_COLUMN])
       fastq2 = Path(row[FASTQ_2_COLUMN]) if FASTQ_2_COLUMN in row and row[
