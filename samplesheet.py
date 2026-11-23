@@ -124,8 +124,11 @@ def rows(args: argparse.Namespace) -> None:
   :param args: command line arguments
   :return: None
   """
+  delimiter = "," if args.csv else "\t"
+  quoting = csv.QUOTE_MINIMAL if args.csv else csv.QUOTE_NONE
+  csv_writer = csv.writer(sys.stdout, delimiter=delimiter, quoting=quoting)
   for values in parse_rows(args.samplesheet, args.columns, args.optional):
-    print("\t".join(values))
+    csv_writer.writerow(values)
 
 
 def parse_rows(samplesheet: Path, required_columns: list[str] | None = None,
@@ -282,6 +285,10 @@ def main(argv: list[str] | None = None):
     "-o", "--optional",
     nargs="+",
     help="Header of optional columns to read. Missing columns will be present in the output but will contain empty strings"
+  )
+  rows_parser.add_argument(
+    "--csv", action="store_true", default=False,
+    help="Write output in CSV format."
   )
   rows_parser.set_defaults(func=rows)
 
