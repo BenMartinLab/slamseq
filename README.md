@@ -13,23 +13,24 @@ To install the scripts on Alliance Canada servers, see [INSTALL.md](INSTALL.md)
 2. [Transfer data to scratch](#transfer-data-to-scratch)
 3. [Prepare working environment](#prepare-working-environment)
     1. [Set additional variables](#set-additional-variables)
-4. [Convert samplesheet to other formats](#convert-samplesheet-to-other-formats)
-5. [Trimming reads](#trimming-reads)
-6. [Reverse complement (if needed)](#reverse-complement-if-needed)
-7. [Sequencing data quality check](#sequencing-data-quality-check)
-8. [Finding major isoform (Optional)](#finding-major-isoform-optional)
-9. [Align reads and process TC mutations](#align-reads-and-process-tc-mutations)
+4. [Merge FASTQ files (if needed)](#merge-fastq-files-if-needed)
+5. [Convert samplesheet to other formats](#convert-samplesheet-to-other-formats)
+6. [Trimming reads](#trimming-reads)
+7. [Reverse complement (if needed)](#reverse-complement-if-needed)
+8. [Sequencing data quality check](#sequencing-data-quality-check)
+9. [Finding major isoform (Optional)](#finding-major-isoform-optional)
+10. [Align reads and process TC mutations](#align-reads-and-process-tc-mutations)
     1. [SlamDunk](#slamdunk)
     2. [Count multiple TC mutations](#count-multiple-tc-mutations)
     3. [Index BAM files](#index-bam-files)
     4. [Alleyoop](#alleyoop)
     5. [MultiQC (check Alleyoop output)](#multiqc-check-alleyoop-output)
     6. [Count no TC mutations](#count-no-tc-mutations)
-10. [Create BigWig for use on Genome Browser](#create-bigwig-for-use-on-genome-browser)
+11. [Create BigWig for use on Genome Browser](#create-bigwig-for-use-on-genome-browser)
     1. [Compute scale factors](#compute-scale-factors)
     2. [Create BigWig files](#create-bigwig-files)
-11. [Correlation for samples and dataset](#correlation-for-samples-and-dataset)
-12. [MultiQC](#multiqc)
+12. [Correlation for samples and dataset](#correlation-for-samples-and-dataset)
+13. [MultiQC](#multiqc)
 
 ## Samplesheet
 
@@ -74,6 +75,7 @@ export PATH=/project/def-bmartin/scripts/slamseq:$PATH
 
 > [!IMPORTANT]
 > Change `samplesheet.csv` by your actual samplesheet filename.
+> If samples have multiple FASTQ files, use merged samplesheet instead (`samplesheet.merged.csv`).
 
 ```shell
 samplesheet=samplesheet.csv
@@ -98,6 +100,21 @@ genome=hg38-spike-dm6
 
 ```shell
 spike=dm6
+```
+
+## Merge FASTQ files (if needed)
+
+> [!IMPORTANT]
+> Change `samplesheet.csv` by your actual samplesheet filename.
+
+```shell
+samplesheet.py merge samplesheet.csv
+```
+
+Remember to set the `samplesheet` variable to the merged samplesheet.
+
+```shell
+samplesheet=samplesheet.merged.csv
 ```
 
 ## Convert samplesheet to other formats
